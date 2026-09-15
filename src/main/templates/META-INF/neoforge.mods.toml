@@ -46,6 +46,13 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
+modId = "sable"
+type = "optional"
+versionRange = "${sable_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "computercraft"
 type = "optional"
 versionRange = "${cct_version_range}"

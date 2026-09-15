@@ -113,6 +113,17 @@ public class GimbalControllerGameTests {
         });
     }
 
+    /** With Sable on the test classpath the factory must hand out the physics subclass. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void sable_subclass_is_used_when_sable_is_loaded(GameTestHelper helper) {
+        helper.setBlock(GIMBAL, gimbalState(Axis.X));
+        GimbalControllerBlockEntity be = gimbal(helper);
+        boolean sable = net.neoforged.fml.ModList.get().isLoaded("sable");
+        boolean subclass = !be.getClass().equals(GimbalControllerBlockEntity.class);
+        helper.assertTrue(sable == subclass, "sable loaded=" + sable + " but block entity class is " + be.getClass().getSimpleName());
+        helper.succeed();
+    }
+
     private static void placeRigX(GameTestHelper helper) {
         helper.setBlock(MOTOR, AllBlocks.CREATIVE_MOTOR.getDefaultState().setValue(CreativeMotorBlock.FACING, Direction.EAST));
         helper.setBlock(INPUT, shaft(Axis.X));

@@ -19,6 +19,9 @@ public final class GimbalBlockEntityFactory {
     }
 
     public static GimbalControllerBlockEntity create(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        // Fully qualified on purpose: the compat class (and Sable's API) only loads when Sable is installed.
+        if (SABLE_LOADED)
+            return com.createvehiclesurplus.compat.sable.SableCompat.createGimbal(type, pos, state);
         return new GimbalControllerBlockEntity(type, pos, state);
     }
 }
