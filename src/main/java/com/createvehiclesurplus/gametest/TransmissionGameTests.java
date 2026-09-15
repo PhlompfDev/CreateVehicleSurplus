@@ -267,6 +267,32 @@ public class TransmissionGameTests {
         });
     }
 
+    /**
+     * Covers read()'s legacy-save detection (the test above covers initialize()'s reset). Asserts in the
+     * same callback as the load: on a live entity, loadWithComponents triggers a later re-initialize whose
+     * link refresh would zero any wrongly loaded strength and hide the bug.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void legacy_save_drops_old_signals(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.NEUTRAL);
+        helper.runAfterDelay(5, () -> {
+            // An old held Neutral link: its slot index (3) now means Reverse.
+            CompoundTag tag = transmission(helper).saveWithoutMetadata(helper.getLevel().registryAccess());
+            tag.remove("GearSpeeds");
+            tag.putIntArray("Linked", new int[]{0, 0, 0, 15});
+            CompoundTag shiftRules = tag.getCompound("ShiftRules");
+            shiftRules.putIntArray("Strengths", new int[]{0, 0, 0, 15});
+            tag.put("ShiftRules", shiftRules);
+            helper.setBlock(BOX, Blocks.AIR);
+            helper.setBlock(BOX, box(0, Drive.NEUTRAL));
+            TransmissionBlockEntity fresh = transmission(helper);
+            fresh.loadWithComponents(tag, helper.getLevel().registryAccess());
+            ShiftRules.Result result = fresh.requestDrive(Drive.REVERSE);
+            check(result.refusal() != ShiftRules.Refusal.REDSTONE_OVERRIDE, "phantom redstone strength survived the load: " + result);
+            helper.succeed();
+        });
+    }
+
     // ---- helpers (package-private: later test classes reuse them) ----
 
     /** Sets the private flag read() sets from a missing GearSpeeds tag, without its loadWithComponents() side effects (see the javadoc on the test above). */
