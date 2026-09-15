@@ -3,6 +3,7 @@ package com.createvehiclesurplus.content.gimbal;
 import com.createvehiclesurplus.CreateVehicleSurplus;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -36,15 +37,26 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
         }
     }
 
-    /** Client packets carry the lean when it moved this much or more... */
+    /** Client packets carry the lean when it moved this much or more, or the effort this much... */
     private static final float SYNC_THRESHOLD_DEGREES = 1;
+    private static final float SYNC_THRESHOLD_EFFORT = 0.05f;
     /** ...but never more often than this. */
     private static final int SYNC_INTERVAL_TICKS = 10;
+    /** Client-side easing of the synced values toward their targets, per tick (settles in ~8 ticks). */
+    private static final double DISPLAY_CHASE = 0.3;
 
     private float leanDegrees;
     private float lastSentLean;
+    /** The controller's torque share as a fraction of its authority, -1..1, about the block's positive axis. */
+    private float effort;
+    private float lastSentEffort;
     private int ticksSinceSync;
     private boolean onShip;
+
+    // Client-side only: what the gyroscope shows, eased toward the synced values so ten-tick updates never step.
+    private final LerpedFloat displayLean = LerpedFloat.linear().startWithValue(0);
+    private final LerpedFloat displayEffort = LerpedFloat.linear().startWithValue(0);
+    private final LerpedFloat displayActivity = LerpedFloat.linear().startWithValue(0);
 
     public GimbalControllerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -76,9 +88,43 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
         return onShip;
     }
 
+    public float effort() {
+        return effort;
+    }
+
     /** Server side: the subclass reports the lean the controller measured. Synced by {@link #tick()}. */
     public void setLean(double degrees) {
         leanDegrees = (float) degrees;
+    }
+
+    /** Server side: the subclass reports its torque share as a fraction of {@code GimbalTuning.AUTHORITY}. Synced by {@link #tick()}. */
+    public void setEffort(double fraction) {
+        effort = (float) fraction;
+    }
+
+    /** Client side: the lean the gyroscope currently shows (zero unless balancing), eased. */
+    public float displayLean(float partialTicks) {
+        return displayLean.getValue(partialTicks);
+    }
+
+    /** Client side: the effort the gyroscope currently shows, eased. */
+    public float displayEffort(float partialTicks) {
+        return displayEffort.getValue(partialTicks);
+    }
+
+    /** Client side: 0 at rest, 1 while balancing; scales the hunting wobble. */
+    public float displayActivity(float partialTicks) {
+        return displayActivity.getValue(partialTicks);
+    }
+
+    private void tickDisplay() {
+        boolean balancing = status() == Status.BALANCING;
+        displayLean.chase(balancing ? leanDegrees : 0, DISPLAY_CHASE, LerpedFloat.Chaser.EXP);
+        displayEffort.chase(balancing ? effort : 0, DISPLAY_CHASE, LerpedFloat.Chaser.EXP);
+        displayActivity.chase(balancing ? 1 : 0, DISPLAY_CHASE, LerpedFloat.Chaser.EXP);
+        displayLean.tickChaser();
+        displayEffort.tickChaser();
+        displayActivity.tickChaser();
     }
 
     /** Server side: refreshed every tick by the subclass; stays false without Sable. */
@@ -87,6 +133,7 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
             this.onShip = onShip;
             if (level != null && !level.isClientSide) {
                 lastSentLean = leanDegrees;
+                lastSentEffort = effort;
                 ticksSinceSync = 0;
                 sendData();
             }
@@ -96,11 +143,18 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if (level == null || level.isClientSide)
+        if (level == null)
             return;
+        if (level.isClientSide) {
+            tickDisplay();
+            return;
+        }
         ticksSinceSync++;
-        if (ticksSinceSync >= SYNC_INTERVAL_TICKS && Math.abs(leanDegrees - lastSentLean) >= SYNC_THRESHOLD_DEGREES) {
+        boolean moved = Math.abs(leanDegrees - lastSentLean) >= SYNC_THRESHOLD_DEGREES
+                || Math.abs(effort - lastSentEffort) >= SYNC_THRESHOLD_EFFORT;
+        if (ticksSinceSync >= SYNC_INTERVAL_TICKS && moved) {
             lastSentLean = leanDegrees;
+            lastSentEffort = effort;
             ticksSinceSync = 0;
             sendData();
         }
@@ -111,6 +165,7 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
         super.write(tag, registries, clientPacket);
         if (clientPacket) {
             tag.putFloat("Lean", leanDegrees);
+            tag.putFloat("Effort", effort);
             tag.putBoolean("OnShip", onShip);
         }
     }
@@ -120,6 +175,7 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
         super.read(tag, registries, clientPacket);
         if (clientPacket) {
             leanDegrees = tag.getFloat("Lean");
+            effort = tag.getFloat("Effort");
             onShip = tag.getBoolean("OnShip");
         }
     }

@@ -1,0 +1,820 @@
+{
+  "textures": {
+    "rotor": "createvehiclesurplus:block/gimbal_controller/rotor",
+    "particle": "createvehiclesurplus:block/gimbal_controller/rotor"
+  },
+  "elements": [
+    {
+      "from": [
+        6.55,
+        7.0,
+        4.6
+      ],
+      "to": [
+        9.45,
+        9.0,
+        6.1
+      ],
+      "name": "rim_north",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.9,
+            1.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            2.9,
+            0,
+            5.8,
+            1.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        6.55,
+        7.0,
+        9.9
+      ],
+      "to": [
+        9.45,
+        9.0,
+        11.4
+      ],
+      "name": "rim_south",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            1.5,
+            2.9,
+            0
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            2.9,
+            1.5,
+            5.8,
+            0
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        9.9,
+        7.0,
+        6.55
+      ],
+      "to": [
+        11.4,
+        9.0,
+        9.45
+      ],
+      "name": "rim_east",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            1.5,
+            2.9,
+            0
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            2.9,
+            0,
+            5.8,
+            1.5
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "west": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        4.6,
+        7.0,
+        6.55
+      ],
+      "to": [
+        6.1,
+        9.0,
+        9.45
+      ],
+      "name": "rim_west",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.9,
+            1.5
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            2.9,
+            1.5,
+            5.8,
+            0
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "east": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        6.55,
+        7.02,
+        4.6
+      ],
+      "to": [
+        9.45,
+        8.98,
+        6.1
+      ],
+      "name": "rim_north_45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.9,
+            1.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            2.9,
+            0,
+            5.8,
+            1.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        6.55,
+        7.02,
+        9.9
+      ],
+      "to": [
+        9.45,
+        8.98,
+        11.4
+      ],
+      "name": "rim_south_45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            1.5,
+            2.9,
+            0
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            2.9,
+            1.5,
+            5.8,
+            0
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        9.9,
+        7.02,
+        6.55
+      ],
+      "to": [
+        11.4,
+        8.98,
+        9.45
+      ],
+      "name": "rim_east_45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            1.5,
+            2.9,
+            0
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            2.9,
+            0,
+            5.8,
+            1.5
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "east": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "west": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        4.6,
+        7.02,
+        6.55
+      ],
+      "to": [
+        6.1,
+        8.98,
+        9.45
+      ],
+      "name": "rim_west_45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.9,
+            1.5
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            2.9,
+            1.5,
+            5.8,
+            0
+          ],
+          "texture": "#rotor",
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            0,
+            3.5,
+            2.9,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "east": {
+          "uv": [
+            2.9,
+            3.5,
+            5.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        7.0,
+        6.5,
+        7.0
+      ],
+      "to": [
+        9.0,
+        9.5,
+        9.0
+      ],
+      "name": "hub",
+      "faces": {
+        "up": {
+          "uv": [
+            5.8,
+            3.5,
+            7.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            7.8,
+            3.5,
+            9.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            0,
+            5.5,
+            2.0,
+            8.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            0,
+            5.5,
+            2.0,
+            8.5
+          ],
+          "texture": "#rotor"
+        },
+        "east": {
+          "uv": [
+            0,
+            5.5,
+            2.0,
+            8.5
+          ],
+          "texture": "#rotor"
+        },
+        "west": {
+          "uv": [
+            0,
+            5.5,
+            2.0,
+            8.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        5.6,
+        7.5,
+        7.5
+      ],
+      "to": [
+        10.4,
+        8.5,
+        8.5
+      ],
+      "name": "spoke_x",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            1.5,
+            4.8,
+            2.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            9.6,
+            1.5,
+            14.399999999999999,
+            2.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            4.8,
+            1.5,
+            9.6,
+            2.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            4.8,
+            1.5,
+            9.6,
+            2.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        7.5,
+        5.6
+      ],
+      "to": [
+        8.5,
+        8.5,
+        7.0
+      ],
+      "name": "spoke_z",
+      "faces": {
+        "up": {
+          "uv": [
+            5.8,
+            0,
+            6.8,
+            1.4
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            11.8,
+            3.5,
+            13.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "east": {
+          "uv": [
+            6.8,
+            0,
+            8.2,
+            1
+          ],
+          "texture": "#rotor"
+        },
+        "west": {
+          "uv": [
+            6.8,
+            0,
+            8.2,
+            1
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        7.5,
+        9.0
+      ],
+      "to": [
+        8.5,
+        8.5,
+        10.4
+      ],
+      "name": "spoke_z",
+      "faces": {
+        "up": {
+          "uv": [
+            5.8,
+            0,
+            6.8,
+            1.4
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            11.8,
+            3.5,
+            13.8,
+            5.5
+          ],
+          "texture": "#rotor"
+        },
+        "east": {
+          "uv": [
+            6.8,
+            0,
+            8.2,
+            1
+          ],
+          "texture": "#rotor"
+        },
+        "west": {
+          "uv": [
+            6.8,
+            0,
+            8.2,
+            1
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        5.6,
+        7.75,
+        7.5
+      ],
+      "to": [
+        10.4,
+        8.25,
+        8.5
+      ],
+      "name": "spoke_45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            2.5,
+            4.8,
+            3.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            4.8,
+            2.5,
+            9.6,
+            3.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            8.2,
+            0,
+            13.0,
+            0.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            8.2,
+            0,
+            13.0,
+            0.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    },
+    {
+      "from": [
+        5.6,
+        7.75,
+        7.5
+      ],
+      "to": [
+        10.4,
+        8.25,
+        8.5
+      ],
+      "name": "spoke_-45",
+      "neoforge_data": {
+        "calculate_normals": true
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": -45
+      },
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            2.5,
+            4.8,
+            3.5
+          ],
+          "texture": "#rotor"
+        },
+        "down": {
+          "uv": [
+            4.8,
+            2.5,
+            9.6,
+            3.5
+          ],
+          "texture": "#rotor"
+        },
+        "north": {
+          "uv": [
+            8.2,
+            0,
+            13.0,
+            0.5
+          ],
+          "texture": "#rotor"
+        },
+        "south": {
+          "uv": [
+            8.2,
+            0,
+            13.0,
+            0.5
+          ],
+          "texture": "#rotor"
+        }
+      }
+    }
+  ]
+}

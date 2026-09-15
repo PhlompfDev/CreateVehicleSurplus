@@ -1,5 +1,6 @@
 package com.createvehiclesurplus.client.ponder;
 
+import com.createvehiclesurplus.content.gimbal.GimbalControllerBlockEntity;
 import com.simibubi.create.foundation.ponder.CreateSceneBuilder;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.element.ElementLink;
@@ -45,6 +46,8 @@ public class GimbalScenes {
         scene.idle(20);
 
         scene.world().setKineticSpeed(bikeSel, SPEED);
+        // The Ponder level runs no physics: tell the block entity it is on a vehicle so the gyroscope animates.
+        scene.world().modifyBlockEntity(gimbal, GimbalControllerBlockEntity.class, be -> be.setOnShip(true));
         scene.effects().rotationSpeedIndicator(gimbal);
         scene.overlay().showText(80)
                 .colored(PonderPalette.GREEN)
@@ -60,9 +63,14 @@ public class GimbalScenes {
                 .pointAt(util.vector().topOf(gimbal))
                 .text("It still leans into turns, like a real bike");
         scene.idle(10);
+        // The gyroscope's outer frame stays level while the bike rolls; the inner frame shows the effort.
         scene.world().rotateSection(bike, LEAN, 0, 0, 20);
+        feedLean(scene, gimbal, 0, LEAN, 0.8f);
+        scene.world().modifyBlockEntity(gimbal, GimbalControllerBlockEntity.class, be -> be.setEffort(0.2));
         scene.idle(40);
         scene.world().rotateSection(bike, -LEAN, 0, 0, 20);
+        feedLean(scene, gimbal, LEAN, 0, -0.8f);
+        scene.world().modifyBlockEntity(gimbal, GimbalControllerBlockEntity.class, be -> be.setEffort(0));
         scene.idle(40);
 
         scene.overlay().showText(60)
@@ -70,5 +78,21 @@ public class GimbalScenes {
                 .pointAt(util.vector().topOf(gimbal))
                 .text("Heavier vehicles need more than one. Redstone switches it off");
         scene.idle(70);
+    }
+
+    /**
+     * Walks the block entity's reported lean from {@code from} to {@code to} in four steps over the
+     * 20 ticks the section takes to roll, with {@code effort} applied while it moves, so the
+     * gyroscope's frame tracks the bike's roll. The client-side easing smooths the steps.
+     */
+    private static void feedLean(CreateSceneBuilder scene, BlockPos gimbal, float from, float to, float effort) {
+        for (int step = 1; step <= 4; step++) {
+            float lean = from + (to - from) * step / 4f;
+            scene.world().modifyBlockEntity(gimbal, GimbalControllerBlockEntity.class, be -> {
+                be.setLean(lean);
+                be.setEffort(effort);
+            });
+            scene.idle(5);
+        }
     }
 }

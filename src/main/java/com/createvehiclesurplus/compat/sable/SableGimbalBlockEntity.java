@@ -1,6 +1,7 @@
 package com.createvehiclesurplus.compat.sable;
 
 import com.createvehiclesurplus.content.gimbal.GimbalControllerBlockEntity;
+import com.createvehiclesurplus.content.gimbal.GimbalTuning;
 import com.createvehiclesurplus.content.gimbal.RollController;
 import com.simibubi.create.content.kinetics.base.HorizontalAxisKineticBlock;
 import dev.ryanhcode.sable.Sable;
@@ -85,6 +86,7 @@ public class SableGimbalBlockEntity extends GimbalControllerBlockEntity implemen
         if (out.isNone())
             return;
         setLean(out.leanDegrees());
+        setEffort(out.torque() / GimbalTuning.AUTHORITY);
         if (out.torque() == 0)
             return;
 

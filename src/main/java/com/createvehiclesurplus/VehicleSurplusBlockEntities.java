@@ -2,6 +2,8 @@ package com.createvehiclesurplus;
 
 import com.createvehiclesurplus.client.DifferentialRenderer;
 import com.createvehiclesurplus.client.DifferentialVisual;
+import com.createvehiclesurplus.client.GimbalRenderer;
+import com.createvehiclesurplus.client.GimbalVisual;
 import com.createvehiclesurplus.client.LongFuelTankRenderer;
 import com.createvehiclesurplus.client.TransmissionRenderer;
 import com.createvehiclesurplus.client.TransmissionVisual;
@@ -11,10 +13,7 @@ import com.createvehiclesurplus.content.gimbal.GimbalBlockEntityFactory;
 import com.createvehiclesurplus.content.gimbal.GimbalControllerBlockEntity;
 import com.createvehiclesurplus.content.long_fuel_tank.LongFuelTankBlockEntity;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
-import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.fluids.tank.FluidTankRenderer;
-import com.simibubi.create.content.kinetics.base.ShaftRenderer;
-import com.simibubi.create.content.kinetics.base.SingleAxisRotatingVisual;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 
@@ -54,10 +53,10 @@ public class VehicleSurplusBlockEntities {
 
     public static final BlockEntityEntry<GimbalControllerBlockEntity> GIMBAL_CONTROLLER = REGISTRATE
             .blockEntity("gimbal_controller", GimbalBlockEntityFactory::create)
-            // The block model has no shaft; Create's own shaft partial spins through it (Flywheel), ShaftRenderer is the fallback.
-            .visual(() -> SingleAxisRotatingVisual.<GimbalControllerBlockEntity>of(AllPartialModels.SHAFT), false)
+            // The visual draws the shaft stubs and the gyroscope's frames and rotor; the renderer only runs without Flywheel.
+            .visual(() -> GimbalVisual::new, false)
             .validBlocks(VehicleSurplusBlocks.GIMBAL_CONTROLLER)
-            .renderer(() -> ShaftRenderer::new)
+            .renderer(() -> GimbalRenderer::new)
             .register();
 
     public static void register() {

@@ -1,6 +1,7 @@
 package com.createvehiclesurplus.gametest;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
+import com.createvehiclesurplus.content.gimbal.GimbalPose;
 import com.createvehiclesurplus.content.gimbal.GimbalTuning;
 import com.createvehiclesurplus.content.gimbal.RollController;
 import net.minecraft.gametest.framework.GameTest;
@@ -159,6 +160,39 @@ public class GimbalControllerMathGameTests {
         RollController.Output out = run(rolledAboutX(10), new Vector3d(), new Vector3d(), new Vector3d(0, 1, 0));
         assertClose(helper, "torque", out.torque(), 0);
         assertClose(helper, "lean", out.leanDegrees(), 0);
+        helper.succeed();
+    }
+
+    /** The outer frame counter-rotates the lean so it stays level with the world, and never past its display limit. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void gyroscope_frame_counter_rotates_the_lean(GameTestHelper helper) {
+        assertClose(helper, "outer at 20", GimbalPose.outerDegrees(20), -20);
+        assertClose(helper, "outer at -35", GimbalPose.outerDegrees(-35), 35);
+        assertClose(helper, "outer clamped", GimbalPose.outerDegrees(170), -GimbalPose.LEAN_DISPLAY_MAX);
+        helper.succeed();
+    }
+
+    /**
+     * Precession: a positive torque about X on a rotor spinning about +Y tips the spin axis toward
+     * +X, a negative rotation about Z; reversing either the torque or the spin reverses it.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void gyroscope_precession_follows_torque_and_spin(GameTestHelper helper) {
+        assertClose(helper, "full effort", GimbalPose.innerDegrees(1, 32), -GimbalPose.TILT_MAX);
+        assertClose(helper, "half effort", GimbalPose.innerDegrees(0.5f, 32), -GimbalPose.TILT_MAX / 2);
+        assertClose(helper, "reverse torque", GimbalPose.innerDegrees(-1, 32), GimbalPose.TILT_MAX);
+        assertClose(helper, "reverse spin", GimbalPose.innerDegrees(1, -32), GimbalPose.TILT_MAX);
+        assertClose(helper, "over-authority is clamped", GimbalPose.innerDegrees(3, 32), -GimbalPose.TILT_MAX);
+        assertClose(helper, "no spin, no precession", GimbalPose.innerDegrees(1, 0), 0);
+        helper.succeed();
+    }
+
+    /** The rotor turns with Create's kinetic angle and stops when declutched by redstone. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void gyroscope_rotor_spins_at_shaft_speed(GameTestHelper helper) {
+        assertClose(helper, "10 ticks at 32", GimbalPose.rotorDegrees(10, 32, true), 96);
+        assertClose(helper, "backwards", GimbalPose.rotorDegrees(10, -32, true), -96);
+        assertClose(helper, "declutched", GimbalPose.rotorDegrees(10, 32, false), 0);
         helper.succeed();
     }
 

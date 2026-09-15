@@ -1,0 +1,72 @@
+{
+  "textures": {
+    "axis": "create:block/axis",
+    "top": "create:block/axis_top",
+    "particle": "create:block/axis"
+  },
+  "elements": [
+    {
+      "name": "shaft_end",
+      "from": [
+        6,
+        6,
+        13.1
+      ],
+      "to": [
+        10,
+        10,
+        16
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            6,
+            6,
+            10,
+            10
+          ],
+          "texture": "#top"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            10,
+            2.9
+          ],
+          "rotation": 270,
+          "texture": "#axis"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            2.9
+          ],
+          "rotation": 90,
+          "texture": "#axis"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            10,
+            2.9
+          ],
+          "rotation": 180,
+          "texture": "#axis"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            10,
+            2.9
+          ],
+          "texture": "#axis"
+        }
+      }
+    }
+  ]
+}

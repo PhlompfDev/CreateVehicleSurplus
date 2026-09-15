@@ -1,0 +1,403 @@
+{
+  "textures": {
+    "parts": "createvehiclesurplus:block/gimbal_controller/parts",
+    "particle": "createvehiclesurplus:block/gimbal_controller/parts"
+  },
+  "elements": [
+    {
+      "from": [
+        7.5,
+        11.5,
+        3.5
+      ],
+      "to": [
+        8.5,
+        12.5,
+        12.5
+      ],
+      "name": "inner_top",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            9.0,
+            1.0
+          ],
+          "texture": "#parts",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            4.25,
+            3.5,
+            6.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "east": {
+          "uv": [
+            0,
+            1.0,
+            9.0,
+            2.0
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            0,
+            1.0,
+            9.0,
+            2.0
+          ],
+          "texture": "#parts"
+        },
+        "north": {
+          "uv": [
+            2.25,
+            3.5,
+            4.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "south": {
+          "uv": [
+            4.25,
+            3.5,
+            6.25,
+            5.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        3.5,
+        3.5
+      ],
+      "to": [
+        8.5,
+        4.5,
+        12.5
+      ],
+      "name": "inner_bottom",
+      "faces": {
+        "up": {
+          "uv": [
+            0,
+            0,
+            9.0,
+            1.0
+          ],
+          "texture": "#parts",
+          "rotation": 90
+        },
+        "down": {
+          "uv": [
+            4.25,
+            3.5,
+            6.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "east": {
+          "uv": [
+            0,
+            1.0,
+            9.0,
+            2.0
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            0,
+            1.0,
+            9.0,
+            2.0
+          ],
+          "texture": "#parts"
+        },
+        "north": {
+          "uv": [
+            2.25,
+            3.5,
+            4.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "south": {
+          "uv": [
+            4.25,
+            3.5,
+            6.25,
+            5.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        4.5,
+        3.5
+      ],
+      "to": [
+        8.5,
+        11.5,
+        4.0
+      ],
+      "name": "inner_north",
+      "faces": {
+        "east": {
+          "uv": [
+            1.75,
+            3.5,
+            2.25,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            3.5,
+            2.25,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "north": {
+          "uv": [
+            0.75,
+            3.5,
+            1.75,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "south": {
+          "uv": [
+            0.75,
+            3.5,
+            1.75,
+            10.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.5,
+        4.5,
+        12.0
+      ],
+      "to": [
+        8.5,
+        11.5,
+        12.5
+      ],
+      "name": "inner_south",
+      "faces": {
+        "east": {
+          "uv": [
+            1.75,
+            3.5,
+            2.25,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            3.5,
+            2.25,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "north": {
+          "uv": [
+            0.75,
+            3.5,
+            1.75,
+            10.5
+          ],
+          "texture": "#parts"
+        },
+        "south": {
+          "uv": [
+            0.75,
+            3.5,
+            1.75,
+            10.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.625,
+        7.625,
+        2.5
+      ],
+      "to": [
+        8.375,
+        8.375,
+        3.9
+      ],
+      "name": "pin",
+      "faces": {
+        "up": {
+          "uv": [
+            6.25,
+            3.5,
+            8.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "down": {
+          "uv": [
+            8.25,
+            3.5,
+            10.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "east": {
+          "uv": [
+            6.25,
+            3.5,
+            8.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            8.25,
+            3.5,
+            10.25,
+            5.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.625,
+        7.625,
+        12.1
+      ],
+      "to": [
+        8.375,
+        8.375,
+        13.5
+      ],
+      "name": "pin",
+      "faces": {
+        "up": {
+          "uv": [
+            6.25,
+            3.5,
+            8.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "down": {
+          "uv": [
+            8.25,
+            3.5,
+            10.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "east": {
+          "uv": [
+            6.25,
+            3.5,
+            8.25,
+            5.5
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            8.25,
+            3.5,
+            10.25,
+            5.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    },
+    {
+      "from": [
+        7.625,
+        4.0,
+        7.625
+      ],
+      "to": [
+        8.375,
+        12.0,
+        8.375
+      ],
+      "name": "axle",
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            3.5,
+            0.75,
+            11.5
+          ],
+          "texture": "#parts"
+        },
+        "south": {
+          "uv": [
+            0,
+            3.5,
+            0.75,
+            11.5
+          ],
+          "texture": "#parts"
+        },
+        "east": {
+          "uv": [
+            0,
+            3.5,
+            0.75,
+            11.5
+          ],
+          "texture": "#parts"
+        },
+        "west": {
+          "uv": [
+            0,
+            3.5,
+            0.75,
+            11.5
+          ],
+          "texture": "#parts"
+        }
+      }
+    }
+  ]
+}
