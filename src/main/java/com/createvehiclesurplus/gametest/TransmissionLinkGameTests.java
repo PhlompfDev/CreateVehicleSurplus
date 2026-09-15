@@ -78,7 +78,8 @@ public class TransmissionLinkGameTests {
             ((TransmissionBlock) state.getBlock()).rotateRoles(helper.getLevel(), abs, state);
             BlockState rotated = helper.getLevel().getBlockState(abs);
             Vec3 slot = transmission(helper).link(Role.UP).getSlot(true).getLocalOffset(helper.getLevel(), abs, rotated);
-            check(slot.z > 0.99, "Up's first slot should now be on the south face, got " + slot);
+            // The slot sits ITEM_SINK px inside the face since the 0.7.0 remodel, so "on the south face" is z near 1, not past it.
+            check(slot.z > 0.9, "Up's first slot should now be on the south face, got " + slot);
         });
         helper.runAfterDelay(8, () -> transmitter(helper).transmit(15));
         helper.runAfterDelay(18, () -> {
