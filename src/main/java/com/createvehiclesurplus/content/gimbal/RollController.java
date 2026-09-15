@@ -27,9 +27,9 @@ public final class RollController {
     public record Output(double torque, double leanDegrees, double targetLeanDegrees) {
         static final Output NONE = new Output(0, 0, 0);
 
-        /** True when the controller produced no real result (the {@link #NONE} sentinel): every field is zero. */
+        /** True only for the {@link #NONE} sentinel, i.e. the controller could not produce a reading; a genuine reading of zero is not none. */
         public boolean isNone() {
-            return torque == 0 && leanDegrees == 0 && targetLeanDegrees == 0;
+            return this == NONE;
         }
     }
 

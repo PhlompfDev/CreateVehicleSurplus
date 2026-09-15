@@ -161,4 +161,15 @@ public class GimbalControllerMathGameTests {
         assertClose(helper, "lean", out.leanDegrees(), 0);
         helper.succeed();
     }
+
+    /** A real reading of zero (upright, stationary) is a reading; only the degenerate sentinel is "none". */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void a_zero_reading_is_not_none(GameTestHelper helper) {
+        RollController.Output upright = run(new Quaterniond(), new Vector3d(), new Vector3d(), X);
+        helper.assertTrue(!upright.isNone(), "upright at rest is a genuine zero reading, not none");
+        RollController.Output degenerate = RollController.compute(new RollController.Inputs(
+                new Quaterniond(), new Vector3d(), new Vector3d(), new Vector3d(), X, new Matrix3d(), 1));
+        helper.assertTrue(degenerate.isNone(), "zero gravity must yield the none sentinel");
+        helper.succeed();
+    }
 }
