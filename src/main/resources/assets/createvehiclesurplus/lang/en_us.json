@@ -61,5 +61,14 @@
   "createvehiclesurplus.ponder.transmission.text_7": "Holding the Neutral face locks the output in Neutral",
   "createvehiclesurplus.ponder.transmission.text_8": "Lower gears turn the output slower and put less load on the engine",
   "createvehiclesurplus.ponder.transmission.text_9": "With CC: Tweaked installed, a computer can drive it as a 'transmission' peripheral",
-  "createvehiclesurplus.ponder.transmission.text_10": "Use a Wrench on a shaft end to turn the faces around the shaft"
+  "createvehiclesurplus.ponder.transmission.text_10": "Use a Wrench on a shaft end to turn the faces around the shaft",
+  "block.createvehiclesurplus.gimbal_controller": "Gimbal Controller",
+  "item.createvehiclesurplus.gimbal_controller.tooltip": "GIMBAL CONTROLLER",
+  "item.createvehiclesurplus.gimbal_controller.tooltip.summary": "Keeps a _Create Aeronautics_ vehicle from _falling over_ sideways, and still lets it _lean_ into turns. Place it _inline_ on the driveshaft, shaft along the vehicle's forward axis.",
+  "item.createvehiclesurplus.gimbal_controller.tooltip.condition1": "When Powered by Redstone",
+  "item.createvehiclesurplus.gimbal_controller.tooltip.behaviour1": "Stops balancing.",
+  "createvehiclesurplus.gui.goggles.gimbal.balancing": "Balancing, leaning %1$s\u00b0",
+  "createvehiclesurplus.gui.goggles.gimbal.idle": "Idle: shaft not turning",
+  "createvehiclesurplus.gui.goggles.gimbal.off": "Off: redstone",
+  "createvehiclesurplus.gui.goggles.gimbal.no_ship": "Not on an Aeronautics vehicle"
 }

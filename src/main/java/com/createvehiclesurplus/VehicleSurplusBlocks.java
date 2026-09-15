@@ -5,6 +5,7 @@ import com.createvehiclesurplus.client.LongFuelTankModel;
 import com.createvehiclesurplus.content.differential.DifferentialBlock;
 import com.createvehiclesurplus.content.fuel_tank.FuelTankBlock;
 import com.createvehiclesurplus.content.fuel_tank.FuelTankItem;
+import com.createvehiclesurplus.content.gimbal.GimbalControllerBlock;
 import com.createvehiclesurplus.content.long_fuel_tank.LongFuelTankBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.simibubi.create.AllMountedStorageTypes;
@@ -70,6 +71,14 @@ public class VehicleSurplusBlocks {
             .initialProperties(SharedProperties::stone)
             .properties(p -> p.noOcclusion().mapColor(MapColor.TERRACOTTA_GREEN))
             .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> 0))
+            .simpleItem()
+            .register();
+
+    /** Balances Simulated vehicles about its shaft axis. Same stress as a Mixer: it is doing work. */
+    public static final BlockEntry<GimbalControllerBlock> GIMBAL_CONTROLLER = REGISTRATE.block("gimbal_controller", GimbalControllerBlock::new)
+            .initialProperties(SharedProperties::stone)
+            .properties(p -> p.noOcclusion().mapColor(MapColor.COLOR_GRAY))
+            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> 4))
             .simpleItem()
             .register();
 
