@@ -2,6 +2,7 @@ package com.createvehiclesurplus.content.transmission;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
 import com.createvehiclesurplus.content.link.SidedLinkBehaviour;
+import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -110,6 +111,25 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
         if (!hasSource() || face == getSourceFacing())
             return 1;
         return ratio();
+    }
+
+    /**
+     * Create multiplies this by the input speed; folding in |ratio| makes the cost scale with the
+     * output speed instead (0 in neutral).
+     */
+    @Override
+    public float calculateStressApplied() {
+        float impact = (float) BlockStressValues.getImpact(getStressConfigKey()) * Math.abs(ratio());
+        this.lastStressApplied = impact;
+        return impact;
+    }
+
+    /** The network caches the impact from when this joined it, and the ratio moves with the input speed. */
+    @Override
+    public void onSpeedChanged(float previousSpeed) {
+        super.onSpeedChanged(previousSpeed);
+        if (level != null && !level.isClientSide && hasNetwork())
+            getOrCreateNetwork().updateStressFor(this, calculateStressApplied());
     }
 
     @Override

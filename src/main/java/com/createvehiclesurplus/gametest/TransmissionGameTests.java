@@ -293,7 +293,37 @@ public class TransmissionGameTests {
         });
     }
 
+    /** 0.25 SU per output RPM: 16 SU at 64 RPM out, whatever the input. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void stress_follows_output_speed(GameTestHelper helper) {
+        placeRig(helper, 1, Drive.FORWARD);
+        helper.runAfterDelay(10, () -> {
+            checkStress(helper, 16);
+            motor(helper).generatedSpeed.setValue(64);
+        });
+        helper.runAfterDelay(40, () -> {
+            checkStress(helper, 16);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void neutral_costs_no_stress(GameTestHelper helper) {
+        placeRig(helper, 1, Drive.NEUTRAL);
+        helper.runAfterDelay(10, () -> {
+            checkStress(helper, 0);
+            helper.succeed();
+        });
+    }
+
     // ---- helpers (package-private: later test classes reuse them) ----
+
+    static void checkStress(GameTestHelper helper, float expected) {
+        TransmissionBlockEntity be = transmission(helper);
+        check(be.hasNetwork(), "the Transmission is not on a network");
+        float actual = be.getOrCreateNetwork().getActualStressOf(be);
+        check(Math.abs(actual - expected) < 0.01f, "stress is " + actual + " SU, expected " + expected);
+    }
 
     /** Sets the private flag read() sets from a missing GearSpeeds tag, without its loadWithComponents() side effects (see the javadoc on the test above). */
     static void setLegacySave(TransmissionBlockEntity be, boolean value) {

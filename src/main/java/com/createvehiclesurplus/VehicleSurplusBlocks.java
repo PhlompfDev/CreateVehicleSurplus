@@ -66,11 +66,12 @@ public class VehicleSurplusBlocks {
             .simpleItem()
             .register();
 
-    /** Inline gearbox driven by frequencies on its four long faces. No stress impact, like every relay. */
+    /** Inline gearshift driven by frequencies on its four long faces. Light stress, scaled to the output speed by its block entity. */
     public static final BlockEntry<TransmissionBlock> TRANSMISSION = REGISTRATE.block("transmission", TransmissionBlock::new)
             .initialProperties(SharedProperties::stone)
             .properties(p -> p.noOcclusion().mapColor(MapColor.TERRACOTTA_GREEN))
-            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> 0))
+            // Per RPM of output, not input: TransmissionBlockEntity.calculateStressApplied folds the ratio in.
+            .onRegister(block -> BlockStressValues.IMPACTS.register(block, () -> 0.25))
             .simpleItem()
             .register();
 
