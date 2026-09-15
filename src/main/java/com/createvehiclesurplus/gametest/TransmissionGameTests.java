@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 /**
@@ -237,29 +238,29 @@ public class TransmissionGameTests {
         });
     }
 
+    /**
+     * loadWithComponents() on a live entity resets Create's own kinetic tracking as a side effect
+     * (its own speed reads back as 0 immediately after), which defeats the very propagation this test
+     * checks: the subsequent shift() detach can't find the network it's supposed to be walking, so
+     * the output stays stale under both the bug and the fix, and the test can't tell them apart no
+     * matter how the box swap around it is timed. GameTestHelper has no way to simulate a real chunk
+     * reload (which reads the saved tag before initialize() runs) short of that reset, so instead this
+     * flips the flag read() would have set directly, and calls initialize() against a genuinely still
+     * attached, still driving entity - the same one a real reload's legacy branch would find.
+     */
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void legacy_save_loads_neutral_in_first_gear(GameTestHelper helper) {
         placeRig(helper, 2, Drive.FORWARD);
-        helper.runAfterDelay(10, () -> {
-            check(speedAt(helper, OUTPUT) != 0, "output is not spinning up before the legacy reload");
+        helper.runAfterDelay(20, () -> {
+            check(speedAt(helper, OUTPUT) != 0, "output is not spinning up before the legacy reset");
             TransmissionBlockEntity be = transmission(helper);
-            CompoundTag tag = be.saveWithoutMetadata(helper.getLevel().registryAccess());
-            tag.remove("GearSpeeds");
-            tag.putIntArray("Linked", new int[]{0, 0, 0, 15});
-            tag.getCompound("ShiftRules").putIntArray("Strengths", new int[]{0, 0, 0, 15});
-            // Keep the forward redstone out of the way, or the wire legitimately re-drives the reloaded state.
+            setLegacySave(be, true);
+            be.initialize();
+            // Keep the forward redstone out of the way now that the reset has run, or the wire legitimately
+            // re-drives the reloaded state.
             helper.setBlock(FORWARD_FACE, Blocks.AIR);
-            helper.setBlock(BOX, Blocks.AIR);
-            helper.setBlock(BOX, box(2, Drive.NEUTRAL));
-            TransmissionBlockEntity fresh = transmission(helper);
-            fresh.loadWithComponents(tag, helper.getLevel().registryAccess());
-            // The fresh block entity's initialize() already ran when it was placed above, before this legacy
-            // tag was loaded into it; GameTestHelper has no way to simulate a real chunk reload (which reads
-            // the saved tag before initialize() runs), so call it again here to exercise the reset the same
-            // way a genuine world load would.
-            fresh.initialize();
         });
-        helper.runAfterDelay(30, () -> {
+        helper.runAfterDelay(40, () -> {
             checkState(helper, 0, Drive.NEUTRAL);
             checkSpeed(helper, OUTPUT, 0);
             helper.succeed();
@@ -267,6 +268,17 @@ public class TransmissionGameTests {
     }
 
     // ---- helpers (package-private: later test classes reuse them) ----
+
+    /** Sets the private flag read() sets from a missing GearSpeeds tag, without its loadWithComponents() side effects (see the javadoc on the test above). */
+    static void setLegacySave(TransmissionBlockEntity be, boolean value) {
+        try {
+            Field f = TransmissionBlockEntity.class.getDeclaredField("legacySave");
+            f.setAccessible(true);
+            f.setBoolean(be, value);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     static void driveTest(GameTestHelper helper, int gear) {
         placeRig(helper, gear, Drive.FORWARD);
