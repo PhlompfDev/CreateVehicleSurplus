@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+**Added**
+- **Gimbal Controller**: keeps a Create Aeronautics vehicle from falling over sideways and still lets it lean into turns. Sits inline on the driveshaft, shaft along the forward axis; redstone switches it off. Needs Sable (comes with Aeronautics).
+- Goggles on the Gimbal Controller show whether it is balancing and the current lean.
+- Ponder scene for the Gimbal Controller.
+
 ## 0.7.0 — Transmission remodel
 
 **Changed**
