@@ -52,6 +52,7 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
     }
 
     /** Turning and not switched off. Whether that does anything depends on being on a vehicle. */
@@ -84,8 +85,11 @@ public class GimbalControllerBlockEntity extends KineticBlockEntity {
     public void setOnShip(boolean onShip) {
         if (this.onShip != onShip) {
             this.onShip = onShip;
-            if (level != null && !level.isClientSide)
+            if (level != null && !level.isClientSide) {
+                lastSentLean = leanDegrees;
+                ticksSinceSync = 0;
                 sendData();
+            }
         }
     }
 

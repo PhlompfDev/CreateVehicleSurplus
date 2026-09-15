@@ -26,6 +26,11 @@ public final class RollController {
     /** {@code torque} is this gimbal's share, already clamped. Lean angles in degrees, signed about the roll axis. */
     public record Output(double torque, double leanDegrees, double targetLeanDegrees) {
         static final Output NONE = new Output(0, 0, 0);
+
+        /** True when the controller produced no real result (the {@link #NONE} sentinel): every field is zero. */
+        public boolean isNone() {
+            return torque == 0 && leanDegrees == 0 && targetLeanDegrees == 0;
+        }
     }
 
     private RollController() {

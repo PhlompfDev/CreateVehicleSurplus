@@ -74,6 +74,22 @@ public class GimbalControllerMathGameTests {
         helper.succeed();
     }
 
+    /**
+     * Forward along +X at 5 m/s, yawing +1 rad/s: {@code ω × v = (0,1,0) × (5,0,0) = (0,0,-5)}, so
+     * the turn centre is at -Z. Positive rotation about +X carries +Y toward +Z (the same
+     * right-hand convention as the Z-axis test above, where positive rotation about +Z carries +Y
+     * toward -X), so reaching -Z from world-up needs a negative angle: the target leans to
+     * {@code -atan2(5, 9.81)} degrees and the torque pushes negative to get there.
+     */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void turning_on_the_x_axis_leans_toward_the_turn_centre(GameTestHelper helper) {
+        RollController.Output out = run(new Quaterniond(), new Vector3d(0, 1, 0), new Vector3d(5, 0, 0), X);
+        double expected = -Math.toDegrees(Math.atan2(5, 9.81));
+        assertClose(helper, "target", out.targetLeanDegrees(), expected);
+        helper.assertTrue(out.torque() < 0, "torque should push toward the target, got " + out.torque());
+        helper.succeed();
+    }
+
     /** Same turn driving the other way along the axis: the centre is now at -X and the lean flips with it. */
     @GameTest(template = TEMPLATE, timeoutTicks = 20)
     public static void forward_direction_does_not_matter(GameTestHelper helper) {
@@ -134,7 +150,10 @@ public class GimbalControllerMathGameTests {
         helper.succeed();
     }
 
-    /** A roll axis pointing straight up has no roll plane to work in: no torque rather than nonsense. */
+    /**
+     * With the roll axis pointing straight up, the vehicle's own up is parallel to the axis, so
+     * its projection onto the roll plane vanishes and the controller returns nothing.
+     */
     @GameTest(template = TEMPLATE, timeoutTicks = 20)
     public static void vertical_roll_axis_gives_no_torque(GameTestHelper helper) {
         RollController.Output out = run(rolledAboutX(10), new Vector3d(), new Vector3d(), new Vector3d(0, 1, 0));

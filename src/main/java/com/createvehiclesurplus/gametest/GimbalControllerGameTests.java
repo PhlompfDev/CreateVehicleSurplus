@@ -119,8 +119,16 @@ public class GimbalControllerGameTests {
         helper.setBlock(GIMBAL, gimbalState(Axis.X));
         GimbalControllerBlockEntity be = gimbal(helper);
         boolean sable = net.neoforged.fml.ModList.get().isLoaded("sable");
-        boolean subclass = !be.getClass().equals(GimbalControllerBlockEntity.class);
+        boolean subclass = "SableGimbalBlockEntity".equals(be.getClass().getSimpleName());
         helper.assertTrue(sable == subclass, "sable loaded=" + sable + " but block entity class is " + be.getClass().getSimpleName());
+        helper.succeed();
+    }
+
+    /** Same stress as a Mixer: the Gimbal Controller does work while balancing. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void stress_impact_is_registered(GameTestHelper helper) {
+        double impact = com.simibubi.create.api.stress.BlockStressValues.getImpact(VehicleSurplusBlocks.GIMBAL_CONTROLLER.get());
+        helper.assertTrue(impact == 4, "expected a stress impact of 4, got " + impact);
         helper.succeed();
     }
 

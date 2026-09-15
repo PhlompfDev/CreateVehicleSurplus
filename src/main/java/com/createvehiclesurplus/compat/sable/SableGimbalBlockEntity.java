@@ -51,10 +51,17 @@ public class SableGimbalBlockEntity extends GimbalControllerBlockEntity implemen
             gimbalCount = countActiveGimbals(server);
     }
 
-    private static int countActiveGimbals(ServerSubLevel subLevel) {
+    /**
+     * Counts active Gimbal Controllers sharing this one's horizontal axis, floored at 1. A
+     * gimbal on the other horizontal axis controls a different roll axis, so it must not
+     * dilute this one's share of the vehicle's balancing torque.
+     */
+    private int countActiveGimbals(ServerSubLevel subLevel) {
+        Axis myAxis = getBlockState().getValue(HorizontalAxisKineticBlock.HORIZONTAL_AXIS);
         int count = 0;
         for (BlockEntitySubLevelActor actor : subLevel.getPlot().getBlockEntityActors())
-            if (actor instanceof SableGimbalBlockEntity gimbal && gimbal.isActive())
+            if (actor instanceof SableGimbalBlockEntity gimbal && gimbal.isActive()
+                    && gimbal.getBlockState().getValue(HorizontalAxisKineticBlock.HORIZONTAL_AXIS) == myAxis)
                 count++;
         return Math.max(1, count);
     }
@@ -75,6 +82,8 @@ public class SableGimbalBlockEntity extends GimbalControllerBlockEntity implemen
                 handle.getLinearVelocity(linearVelocity),
                 DimensionPhysicsData.getGravity(subLevel.getLevel()),
                 axis, mass.getInertiaTensor(), gimbalCount));
+        if (out.isNone())
+            return;
         setLean(out.leanDegrees());
         if (out.torque() == 0)
             return;

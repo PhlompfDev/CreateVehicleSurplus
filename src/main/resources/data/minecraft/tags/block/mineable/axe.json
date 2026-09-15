@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "createvehiclesurplus:differential",
-    "createvehiclesurplus:gimbal_controller"
+    "createvehiclesurplus:differential"
   ]
 }
