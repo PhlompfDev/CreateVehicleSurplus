@@ -45,7 +45,8 @@ public class GearSpeedsGameTests {
     public static void modifier_hits_the_target(GameTestHelper helper) {
         check(GearSpeeds.modifier(64, Drive.FORWARD, 16) == 4f, "64 from 16 forward");
         check(GearSpeeds.modifier(64, Drive.REVERSE, 16) == -4f, "64 from 16 reverse");
-        check(16 * GearSpeeds.modifier(64, Drive.FORWARD, -16) == -64f, "forward follows a negative input");
+        check(-16 * GearSpeeds.modifier(64, Drive.FORWARD, -16) == -64f, "forward follows a negative input");
+        check(-16 * GearSpeeds.modifier(64, Drive.REVERSE, -16) == 64f, "reverse opposes a negative input");
         helper.succeed();
     }
 
@@ -63,6 +64,8 @@ public class GearSpeedsGameTests {
             for (int input = 1; input <= 256; input++) {
                 float out = input * GearSpeeds.modifier(target, Drive.FORWARD, input);
                 check(out <= target && out > target - 0.01f, "input " + input + " target " + target + " gave " + out);
+                float back = input * GearSpeeds.modifier(target, Drive.REVERSE, input);
+                check(-back <= target && -back > target - 0.01f, "reverse input " + input + " target " + target + " gave " + back);
             }
         helper.succeed();
     }

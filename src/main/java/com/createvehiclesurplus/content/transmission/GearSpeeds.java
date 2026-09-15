@@ -58,8 +58,7 @@ public final class GearSpeeds {
         float ratio = target / input;
         while (input * ratio > target)
             ratio = Math.nextDown(ratio);
-        int inputSign = inputSpeed > 0 ? 1 : -1;
-        return inputSign * drive.sign() * ratio;
+        return drive.sign() * ratio;
     }
 
     /** Loads saved speeds, clamping them; gears missing from {@code saved} keep their value. */
