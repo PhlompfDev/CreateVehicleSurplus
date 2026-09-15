@@ -23,7 +23,6 @@ public class GimbalControllerMathGameTests {
     private static final Vector3d GRAVITY = new Vector3d(0, -9.81, 0);
     private static final Vector3d X = new Vector3d(1, 0, 0);
     private static final Vector3d Z = new Vector3d(0, 0, 1);
-    private static final double EPS = 1e-6;
 
     private static RollController.Output run(Quaterniond orientation, Vector3d angular, Vector3d linear, Vector3d axis, Matrix3d inertia, int count) {
         return RollController.compute(new RollController.Inputs(orientation, angular, linear, GRAVITY, axis, inertia, count));
@@ -132,6 +131,15 @@ public class GimbalControllerMathGameTests {
         assertClose(helper, "zero-g torque", noGravity.torque(), 0);
         RollController.Output noInertia = run(rolledAboutX(10), new Vector3d(), new Vector3d(), X, new Matrix3d().zero(), 1);
         assertClose(helper, "zero-inertia torque", noInertia.torque(), 0);
+        helper.succeed();
+    }
+
+    /** A roll axis pointing straight up has no roll plane to work in: no torque rather than nonsense. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 20)
+    public static void vertical_roll_axis_gives_no_torque(GameTestHelper helper) {
+        RollController.Output out = run(rolledAboutX(10), new Vector3d(), new Vector3d(), new Vector3d(0, 1, 0));
+        assertClose(helper, "torque", out.torque(), 0);
+        assertClose(helper, "lean", out.leanDegrees(), 0);
         helper.succeed();
     }
 }

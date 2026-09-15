@@ -28,14 +28,12 @@ public final class RollController {
         static final Output NONE = new Output(0, 0, 0);
     }
 
-    private static final double TINY = 1e-9;
-
     private RollController() {
     }
 
     public static Output compute(Inputs in) {
         double gravityLength = in.gravity().length();
-        if (!(gravityLength > TINY))
+        if (!(gravityLength > GimbalTuning.EPSILON))
             return Output.NONE;
 
         Vector3d axis = in.orientation().transform(new Vector3d(in.rollAxisLocal())).normalize();
@@ -56,9 +54,9 @@ public final class RollController {
         double error = wrap(target - lean);
         double rollRate = in.angularVelocity().dot(axis);
 
-        Vector3d local = new Vector3d(in.rollAxisLocal());
+        Vector3d local = new Vector3d(in.rollAxisLocal()).normalize();
         double inertia = in.inertiaLocal().transform(new Vector3d(local)).dot(local);
-        if (!(inertia > TINY))
+        if (!(inertia > GimbalTuning.EPSILON))
             return Output.NONE;
 
         double demand = inertia * (GimbalTuning.KP * error - GimbalTuning.KD * rollRate);
@@ -76,7 +74,7 @@ public final class RollController {
     private static Vector3d projectOntoPlane(Vector3dc v, Vector3dc axis) {
         Vector3d out = new Vector3d(v).fma(-v.dot(axis), axis);
         double length = out.length();
-        if (!(length > 1e-6))
+        if (!(length > GimbalTuning.EPSILON))
             return null;
         return out.div(length);
     }

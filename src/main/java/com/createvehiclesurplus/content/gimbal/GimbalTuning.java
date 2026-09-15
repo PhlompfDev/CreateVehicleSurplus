@@ -12,6 +12,8 @@ public final class GimbalTuning {
     public static final double LEAN_MAX_DEGREES = 40.0;
     /** Torque one gimbal can supply (Sable mass units * block^2 / s^2). A ~30-block bike needs ~600 at full error. */
     public static final double AUTHORITY = 2000.0;
+    /** Magnitudes at or below this count as zero: gravity, inertia about the roll axis, a projected up vector. */
+    public static final double EPSILON = 1e-6;
 
     private GimbalTuning() {
     }
