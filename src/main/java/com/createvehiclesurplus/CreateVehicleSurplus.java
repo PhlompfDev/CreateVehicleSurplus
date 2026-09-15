@@ -31,6 +31,7 @@ public class CreateVehicleSurplus {
         VehicleSurplusBlockEntities.register();
 
         modBus.addListener(FuelTankBlockEntity::registerCapabilities);
+        modBus.addListener(VehicleSurplusNetwork::register);
         NeoForge.EVENT_BUS.addListener(SidedLinkInteractionHandler::onRightClickBlock);
         // Fully qualified on purpose: the compat class (and CC's API) only loads when CC is installed.
         if (ModList.get().isLoaded("computercraft"))

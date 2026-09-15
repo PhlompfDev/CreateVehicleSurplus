@@ -1,17 +1,21 @@
 package com.createvehiclesurplus.content.transmission;
 
 import com.createvehiclesurplus.VehicleSurplusBlockEntities;
+import com.createvehiclesurplus.client.TransmissionScreen;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.RotationPropagator;
 import com.simibubi.create.content.kinetics.base.AbstractEncasedShaftBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
+import net.createmod.catnip.platform.CatnipServices;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -21,7 +25,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.ticks.TickPriority;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -118,6 +125,22 @@ public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<
             IWrenchable.playRotateSound(level, context.getClickedPos());
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /** Shift-right-click with an empty hand opens the gear speed screen. Plain clicks stay free for the link slots. */
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (!player.isShiftKeyDown())
+            return InteractionResult.PASS;
+        // Same client-only hop as Create's Sequenced Gearshift.
+        CatnipServices.PLATFORM.executeOnClientOnly(() -> () -> withBlockEntityDo(level, pos, be -> displayScreen(be, player)));
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private void displayScreen(TransmissionBlockEntity be, Player player) {
+        if (player instanceof LocalPlayer)
+            TransmissionScreen.open(be);
     }
 
     /** One quarter-turn of the role layout. Frequencies belong to roles, so they move with it. */
