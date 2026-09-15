@@ -70,6 +70,7 @@ public final class ShiftRules {
     private final long[] nextRepeat = new long[SHIFT_ROLES.length];
     private long lastShift = Long.MIN_VALUE / 2;
     private Drive computerDrive = Drive.NEUTRAL;
+    private boolean repropagatePending;
 
     public int strength(Role role) {
         return strengths[role.ordinal()];
@@ -142,11 +143,18 @@ public final class ShiftRules {
         return Result.shiftTo(current.withDrive(drive));
     }
 
-    /** Called every server tick: lands a pending drive change, then repeats held shifts. */
+    /** A speed edit on the gear in use needs the output re-propagated, which waits for the cooldown. */
+    public void requestRepropagate() {
+        repropagatePending = true;
+    }
+
+    /** Called every server tick: lands a pending drive change, then a pending re-propagation, then repeats held shifts. */
     public Result tick(State current, long now) {
         Result drive = followDrive(current, now);
         if (drive.target() != null)
             return drive;
+        if (repropagatePending && !coolingDown(now))
+            return Result.shiftTo(current);
         for (Role role : SHIFT_ROLES) {
             int i = repeatIndex(role);
             if (strength(role) == 0 || now < nextRepeat[i] || coolingDown(now))
@@ -161,6 +169,7 @@ public final class ShiftRules {
 
     public void markShifted(long now) {
         lastShift = now;
+        repropagatePending = false;
     }
 
     private Result pulse(boolean up, State current, long now) {

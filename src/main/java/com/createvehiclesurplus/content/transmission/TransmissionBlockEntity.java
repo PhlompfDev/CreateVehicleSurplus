@@ -20,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -51,6 +52,9 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     // every shift. Slots are the four forward gears then reverse; see engagementSlot.
     private final LerpedFloat[] engagement = new LerpedFloat[ENGAGEMENT_SLOTS];
     private boolean engagementStarted;
+    // Set by read() when the saved tag predates GearSpeeds: the old Wired/Linked/ShiftRules slots mean
+    // different roles now, so they're left at their zeroed defaults and initialize() resets the state instead.
+    private boolean legacySave;
 
     public TransmissionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -112,6 +116,11 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     @Override
     public void initialize() {
         super.initialize();
+        // Runs before propagation, so there's nothing to detach yet - just reset the state directly.
+        if (legacySave && level != null && !level.isClientSide && (gear() != 0 || drive() != Drive.NEUTRAL))
+            level.setBlock(worldPosition, getBlockState().setValue(TransmissionBlock.GEAR, 0).setValue(TransmissionBlock.DRIVE, Drive.NEUTRAL),
+                    Block.UPDATE_CLIENTS);
+        legacySave = false;
         updateWiredSignals();
     }
 
@@ -205,28 +214,26 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
         return result;
     }
 
-    /** Changes one gear's target speed (clamped). Re-propagates if it is the gear in use. */
+    /** Changes one gear's target speed (clamped). Queues a re-propagation if it is the gear in use. */
     public void setGearSpeed(int gear, int rpm) {
-        int active = speeds.get(gear());
+        int previousTarget = targetSpeed();
         speeds.set(gear, rpm);
-        afterSpeedEdit(active);
+        afterSpeedEdit(previousTarget);
     }
 
-    /** Changes every gear's target speed (clamped), as the screen sends them. */
+    /** Changes every gear's target speed (clamped), as the screen sends them. Queues a re-propagation if it is the gear in use. */
     public void setGearSpeeds(int[] rpms) {
-        int active = speeds.get(gear());
+        int previousTarget = targetSpeed();
         speeds.setAll(rpms);
-        afterSpeedEdit(active);
+        afterSpeedEdit(previousTarget);
     }
 
-    private void afterSpeedEdit(int previousActive) {
+    /** Queues a re-propagation instead of shifting immediately: every shift flickers the driveline, and a script editing a speed every tick would destroy it. */
+    private void afterSpeedEdit(int previousTarget) {
         if (level == null || level.isClientSide)
             return;
-        if (speeds.get(gear()) != previousActive && drive() != Drive.NEUTRAL
-                && getBlockState().getBlock() instanceof TransmissionBlock block) {
-            block.shift(level, worldPosition, getBlockState(), state());
-            rules.markShifted(level.getGameTime());
-        }
+        if (targetSpeed() != previousTarget && drive() != Drive.NEUTRAL)
+            rules.requestRepropagate();
         setChanged();
         sendData();
     }
@@ -266,6 +273,12 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        // A save without GearSpeeds predates the role reorder: its Wired/Linked/ShiftRules slots would load as
+        // the wrong roles, so leave them at their defaults and let initialize() reset the block state instead.
+        if (!clientPacket && !tag.contains("GearSpeeds")) {
+            legacySave = true;
+            return;
+        }
         rules.read(tag.getCompound("ShiftRules"));
         speeds.read(tag.getIntArray("GearSpeeds"));
         copyInto(tag.getIntArray("Wired"), wired);

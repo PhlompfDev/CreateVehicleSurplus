@@ -134,6 +134,29 @@ public class ShiftRulesGameTests {
     }
 
     @GameTest(template = TEMPLATE)
+    public static void repropagation_waits_for_cooldown(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        expectShift(rules.requestDrive(Drive.FORWARD, n(1), 0), f(1));
+        rules.markShifted(0);
+        rules.requestRepropagate();
+        expectNothing(rules.tick(f(1), 3));
+        expectShift(rules.tick(f(1), 4), f(1));
+        rules.markShifted(4);
+        expectNothing(rules.tick(f(1), 20));
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void a_shift_clears_pending_repropagation(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        expectShift(rules.requestDrive(Drive.FORWARD, n(1), 0), f(1));
+        rules.requestRepropagate();
+        rules.markShifted(0);
+        expectNothing(rules.tick(f(1), 10));
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
     public static void saved_state_survives_reload(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
         rules.onSignal(Role.UP, 15, n(0), 0);

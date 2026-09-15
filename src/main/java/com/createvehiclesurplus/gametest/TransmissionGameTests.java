@@ -220,6 +220,48 @@ public class TransmissionGameTests {
         });
     }
 
+    /** A script editing the active gear's speed every tick must not detach/re-attach every tick, or Create destroys the block. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void rapid_speed_edits_keep_the_driveline(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.FORWARD);
+        for (int tick = 10; tick <= 49; tick++) {
+            int rpm = tick % 2 == 0 ? 32 : 48;
+            helper.runAfterDelay(tick, () -> transmission(helper).setGearSpeed(0, rpm));
+        }
+        helper.runAfterDelay(50, () -> transmission(helper).setGearSpeed(0, 40));
+        helper.runAfterDelay(70, () -> {
+            check(helper.getBlockState(BOX).getBlock() instanceof TransmissionBlock, "the Transmission broke");
+            check(helper.getBlockState(OUTPUT).getBlock() == AllBlocks.SHAFT.get(), "the output shaft broke");
+            checkSpeed(helper, OUTPUT, Math.signum(speedAt(helper, INPUT)) * 40);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void legacy_save_loads_neutral_in_first_gear(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.NEUTRAL);
+        helper.runAfterDelay(5, () -> {
+            TransmissionBlockEntity be = transmission(helper);
+            CompoundTag tag = be.saveWithoutMetadata(helper.getLevel().registryAccess());
+            tag.remove("GearSpeeds");
+            tag.putIntArray("Linked", new int[]{0, 0, 0, 15});
+            tag.getCompound("ShiftRules").putIntArray("Strengths", new int[]{0, 0, 0, 15});
+            helper.setBlock(BOX, Blocks.AIR);
+            helper.setBlock(BOX, box(2, Drive.NEUTRAL));
+            TransmissionBlockEntity fresh = transmission(helper);
+            fresh.loadWithComponents(tag, helper.getLevel().registryAccess());
+            // The fresh block entity's initialize() already ran when it was placed above, before this legacy
+            // tag was loaded into it; GameTestHelper has no way to simulate a real chunk reload (which reads
+            // the saved tag before initialize() runs), so call it again here to exercise the reset the same
+            // way a genuine world load would.
+            fresh.initialize();
+        });
+        helper.runAfterDelay(20, () -> {
+            checkState(helper, 0, Drive.NEUTRAL);
+            helper.succeed();
+        });
+    }
+
     // ---- helpers (package-private: later test classes reuse them) ----
 
     static void driveTest(GameTestHelper helper, int gear) {
