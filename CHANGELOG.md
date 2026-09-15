@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — Gimbal Controller
 
 **Added**
 - **Gimbal Controller**: keeps a Create Aeronautics vehicle from falling over sideways and still lets it lean into turns. Sits inline on the driveshaft, shaft along the forward axis; redstone switches it off. Needs Sable (comes with Aeronautics).
+- The Gimbal Controller is an animated gyroscope: the outer frame stays level as the vehicle leans, the inner frame tips with the balancing effort, and the rotor spins with the shaft.
 - Goggles on the Gimbal Controller show whether it is balancing and the current lean.
 - Ponder scene for the Gimbal Controller.
 
