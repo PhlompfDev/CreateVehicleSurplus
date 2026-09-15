@@ -1,6 +1,7 @@
 package com.createvehiclesurplus.client.ponder;
 
-import com.createvehiclesurplus.content.transmission.Gear;
+import com.createvehiclesurplus.content.transmission.Drive;
+import com.createvehiclesurplus.content.transmission.GearSpeeds;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
 import com.simibubi.create.content.redstone.analogLever.AnalogLeverBlockEntity;
@@ -65,8 +66,8 @@ public class TransmissionScenes {
         scene.overlay().showText(60).attachKeyFrame().placeNearTarget().pointAt(util.vector().topOf(box.above()))
                 .text("A pulse on the Up face shifts one gear up");
         scene.idle(30);
-        shift(scene, upLever, box, output, outEnd, Gear.QUARTER);
-        shift(scene, upLever, box, output, outEnd, Gear.HALF);
+        shift(scene, upLever, box, output, outEnd, 0);
+        shift(scene, upLever, box, output, outEnd, 1);
         scene.overlay().showText(90).placeNearTarget().pointAt(util.vector().centerOf(outEnd))
                 .text("The Down face works the same way. Every gear is a reduction: 1/4, 1/2, 3/4 and 1:1, plus Reverse");
         scene.idle(100);
@@ -77,13 +78,13 @@ public class TransmissionScenes {
                 .text("The Analog face picks a gear from signal strength and overrides the pulses");
         scene.idle(40);
         scene.world().modifyBlockEntityNBT(analogLever, AnalogLeverBlockEntity.class, nbt -> nbt.putInt("State", 15));
-        setGear(scene, box, output, outEnd, Gear.DIRECT);
+        setState(scene, box, output, outEnd, 3, Drive.FORWARD);
         scene.idle(50);
 
         scene.world().showSection(neutralLever, Direction.SOUTH);
         scene.idle(10);
         scene.world().toggleRedstonePower(neutralLever);
-        setGear(scene, box, output, outEnd, Gear.NEUTRAL);
+        setState(scene, box, output, outEnd, 0, Drive.NEUTRAL);
         scene.overlay().showText(80).attachKeyFrame().colored(PonderPalette.RED).placeNearTarget()
                 .pointAt(util.vector().blockSurface(box, Direction.NORTH))
                 .text("Holding the Neutral face locks the output in Neutral");
@@ -99,19 +100,21 @@ public class TransmissionScenes {
         scene.idle(90);
     }
 
+    private static final GearSpeeds DEFAULTS = new GearSpeeds();
+
     /** One lever pulse on the Up face: on, shift, off. */
-    private static void shift(CreateSceneBuilder scene, Selection lever, BlockPos box, Selection output, BlockPos outEnd, Gear gear) {
+    private static void shift(CreateSceneBuilder scene, Selection lever, BlockPos box, Selection output, BlockPos outEnd, int gear) {
         scene.world().toggleRedstonePower(lever);
-        setGear(scene, box, output, outEnd, gear);
+        setState(scene, box, output, outEnd, gear, Drive.FORWARD);
         scene.idle(15);
         scene.world().toggleRedstonePower(lever);
         scene.idle(15);
     }
 
-    private static void setGear(CreateSceneBuilder scene, BlockPos box, Selection output, BlockPos outEnd, Gear gear) {
-        scene.world().modifyBlock(box, state -> state.setValue(TransmissionBlock.GEAR, gear.index()), false);
-        scene.world().setKineticSpeed(output, SPEED * gear.ratio());
-        if (gear != Gear.NEUTRAL)
+    private static void setState(CreateSceneBuilder scene, BlockPos box, Selection output, BlockPos outEnd, int gear, Drive drive) {
+        scene.world().modifyBlock(box, state -> state.setValue(TransmissionBlock.GEAR, gear).setValue(TransmissionBlock.DRIVE, drive), false);
+        scene.world().setKineticSpeed(output, drive.sign() * DEFAULTS.get(gear));
+        if (drive != Drive.NEUTRAL)
             scene.effects().rotationDirectionIndicator(outEnd);
         scene.idle(10);
     }

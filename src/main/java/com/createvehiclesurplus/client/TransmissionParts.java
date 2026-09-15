@@ -1,7 +1,6 @@
 package com.createvehiclesurplus.client;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
-import com.createvehiclesurplus.content.transmission.Gear;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
@@ -23,7 +22,7 @@ import org.joml.Vector3f;
 public final class TransmissionParts {
     public static final PartialModel LAY_ROD = PartialModel.of(CreateVehicleSurplus.rl("block/transmission/lay_rod"));
     public static final PartialModel LAY_REVERSE = PartialModel.of(CreateVehicleSurplus.rl("block/transmission/lay_reverse"));
-    /** Cluster gears and sliders by size: 1/4, 1/2, 3/4, 1:1. Reverse shares the 1/4 size. */
+    /** Cluster gears and sliders by size, one per forward gear (1st smallest). Reverse shares the smallest size. */
     public static final PartialModel[] LAY = {
             PartialModel.of(CreateVehicleSurplus.rl("block/transmission/lay_1")),
             PartialModel.of(CreateVehicleSurplus.rl("block/transmission/lay_2")),
@@ -39,7 +38,7 @@ public final class TransmissionParts {
     public static final float LAY_CENTRE = 12.75f;
     /** Where the slider parks in Neutral: under the socket zone, inside the body. */
     public static final float NEUTRAL_A = 8f;
-    /** Slot of each gear along the shaft, in pixels from the negative end; index = Gear.index(). */
+    /** Layout positions along the shaft, pixels from the negative end: reverse, neutral, then gears 1-4 (GEARS in tools/gen_transmission_assets.py). */
     public static final float[] SLOT_A = {2.0f, NEUTRAL_A, 4.0f, 11.0f, 12.6f, 14.2f};
     /** Cluster gears turn opposite to the slider; this phase interleaves the teeth where speeds match. */
     public static final float MESH_OFFSET = 22.5f;
@@ -54,19 +53,28 @@ public final class TransmissionParts {
         // Loads the class, which creates the partials above.
     }
 
-    /** Engagement slot of a gear, or -1 for neutral. */
-    public static int slotOf(Gear gear) {
-        return TransmissionBlockEntity.engagementSlot(gear);
+    /** Engagement slot the gearbox meshes, or -1 in neutral. */
+    public static int slotOf(TransmissionBlockEntity be) {
+        return TransmissionBlockEntity.engagementSlot(be.gear(), be.drive());
     }
 
-    /** The gear an engagement slot belongs to. */
-    public static Gear gearOfSlot(int slot) {
-        return slot == REVERSE_SLOT ? Gear.REVERSE : Gear.byIndex(slot + 2);
+    /** Where an engagement slot's gear sits along the shaft, in pixels. */
+    public static float slotA(int slot) {
+        return SLOT_A[slot == REVERSE_SLOT ? 0 : slot + 2];
     }
 
-    /** Partial size index (0..3) of a gear's cluster gear and slider; reverse uses the 1/4 size. */
-    public static int sizeOf(Gear gear) {
-        return gear == Gear.REVERSE ? 0 : gear.index() - 2;
+    /** Partial size index (0..3) of a slot's cluster gear and slider; reverse uses the smallest size. */
+    public static int sizeOf(int slot) {
+        return slot == REVERSE_SLOT ? 0 : slot;
+    }
+
+    public static PartialModel clusterGear(int slot) {
+        return slot == REVERSE_SLOT ? LAY_REVERSE : LAY[slot];
+    }
+
+    /** Where a slot's slider sits, {@code engagement} of the way from its Neutral park to its slot. */
+    public static float sliderA(int slot, float engagement) {
+        return NEUTRAL_A + (slotA(slot) - NEUTRAL_A) * engagement;
     }
 
     /** The shaft end the rotation comes in through: the source's side, or the negative end while unpowered. */
@@ -89,11 +97,6 @@ public final class TransmissionParts {
     /** Offset from the block centre, in blocks, of a point on the layshaft {@code a} pixels from the negative end. */
     public static Vector3f onLayshaft(Axis axis, float a) {
         return world(axis, LAY_CENTRE - 8, LAY_CENTRE - 8, a - 8).div(16);
-    }
-
-    /** Where a slider sits, {@code engagement} of the way from its Neutral park to its gear's slot. */
-    public static float sliderA(Gear gear, float engagement) {
-        return NEUTRAL_A + (SLOT_A[gear.index()] - NEUTRAL_A) * engagement;
     }
 
     /** (p, q) cross-section coordinates and a along the shaft into world coordinates, as the asset generator does. */

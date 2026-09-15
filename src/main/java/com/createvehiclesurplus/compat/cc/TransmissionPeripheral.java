@@ -36,19 +36,14 @@ public class TransmissionPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final String getGear() {
+    public final int getGear() {
         return api.getGear();
     }
 
     @LuaFunction(mainThread = true)
-    public final List<String> getGears() {
-        return api.getGears();
-    }
-
-    @LuaFunction(mainThread = true)
-    public final MethodResult setGear(String label) throws LuaException {
+    public final MethodResult setGear(int gear) throws LuaException {
         try {
-            return MethodResult.of(api.setGear(label));
+            return MethodResult.of(api.setGear(gear));
         } catch (IllegalArgumentException e) {
             throw new LuaException(e.getMessage());
         }
@@ -65,8 +60,31 @@ public class TransmissionPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final double getRatio() {
-        return api.getRatio();
+    public final String getDirection() {
+        return api.getDirection();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final MethodResult setDirection(String direction) throws LuaException {
+        try {
+            return MethodResult.of(api.setDirection(direction));
+        } catch (IllegalArgumentException e) {
+            throw new LuaException(e.getMessage());
+        }
+    }
+
+    @LuaFunction(mainThread = true)
+    public final List<Integer> getGearSpeeds() {
+        return api.getGearSpeeds();
+    }
+
+    @LuaFunction(mainThread = true)
+    public final int setGearSpeed(int gear, int rpm) throws LuaException {
+        try {
+            return api.setGearSpeed(gear, rpm);
+        } catch (IllegalArgumentException e) {
+            throw new LuaException(e.getMessage());
+        }
     }
 
     @LuaFunction(mainThread = true)
@@ -77,10 +95,5 @@ public class TransmissionPeripheral implements IPeripheral {
     @LuaFunction(mainThread = true)
     public final double getOutputSpeed() {
         return api.getOutputSpeed();
-    }
-
-    @LuaFunction(mainThread = true)
-    public final String getControl() {
-        return api.getControl();
     }
 }

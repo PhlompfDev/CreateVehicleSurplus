@@ -6,6 +6,7 @@ import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
@@ -29,10 +30,10 @@ import java.util.Map;
 
 /**
  * The Transmission's state machine host. Create's rotation propagator asks
- * {@link #getRotationSpeedModifier} for the ratio on each face; the source face gets 1, the
- * other end the current gear's ratio (0 in neutral, which disconnects it like a Clutch).
- * Signals from wires and links go through {@link ShiftRules}; accepted shifts are applied with
- * {@link TransmissionBlock#shift}.
+ * {@link #getRotationSpeedModifier} for the ratio on each face; the source face gets 1, the other
+ * end {@code sign × target / |input|}, so the output turns at the current gear's target speed
+ * whatever the input (0 in neutral, which disconnects it like a Clutch). Signals from wires and
+ * links go through {@link ShiftRules}; accepted changes are applied with {@link TransmissionBlock#shift}.
  */
 public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     /** One link behaviour type per role, shared by every Transmission. */
@@ -40,15 +41,16 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
         for (Role role : Role.VALUES)
             map.put(role, SidedLinkBehaviour.newType("transmission_link_" + role.id()));
     });
+    public static final int ENGAGEMENT_SLOTS = 5;
 
     private final ShiftRules rules = new ShiftRules();
+    private final GearSpeeds speeds = new GearSpeeds();
     private final int[] wired = new int[Role.VALUES.length];
     private final int[] linked = new int[Role.VALUES.length];
     // Client-side only: how far each corner cog has slid in to mesh its pinion (0 parked, 1 engaged), eased on
-    // every shift. Slots are the four forward gears then reverse; see TransmissionParts.slotOf.
+    // every shift. Slots are the four forward gears then reverse; see engagementSlot.
     private final LerpedFloat[] engagement = new LerpedFloat[ENGAGEMENT_SLOTS];
     private boolean engagementStarted;
-    public static final int ENGAGEMENT_SLOTS = 5;
 
     public TransmissionBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -70,15 +72,41 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
         return getBehaviour(LINK_TYPES.get(role));
     }
 
-    public Gear gear() {
-        return TransmissionBlock.gearOf(getBlockState());
+    public int gear() {
+        return getBlockState().getValue(TransmissionBlock.GEAR);
+    }
+
+    public Drive drive() {
+        return getBlockState().getValue(TransmissionBlock.DRIVE);
+    }
+
+    public ShiftRules.State state() {
+        return TransmissionBlock.stateOf(getBlockState());
+    }
+
+    public GearSpeeds speeds() {
+        return speeds;
+    }
+
+    /**
+     * The current gear's target speed. On the server it is also capped at Create's max rotation
+     * speed; clients and the Ponder level have no server config, and only draw with it.
+     */
+    public int targetSpeed() {
+        int max = level instanceof ServerLevel ? AllConfigs.server().kinetics.maxRotationSpeed.get() : GearSpeeds.CEILING;
+        return speeds.target(gear(), max);
+    }
+
+    /** Output speed divided by input speed right now: 0 in neutral or without input. */
+    public float ratio() {
+        return GearSpeeds.modifier(targetSpeed(), drive(), getTheoreticalSpeed());
     }
 
     @Override
     public float getRotationSpeedModifier(Direction face) {
         if (!hasSource() || face == getSourceFacing())
             return 1;
-        return gear().ratio();
+        return ratio();
     }
 
     @Override
@@ -96,20 +124,20 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
             tickEngagement();
             return;
         }
-        apply(rules.tick(gear(), level.getGameTime()), false);
+        apply(rules.tick(state(), level.getGameTime()), false);
     }
 
-    /** Slot a gear engages: forward gears 0..3 in order, reverse last, neutral none. */
-    public static int engagementSlot(Gear gear) {
-        return switch (gear) {
+    /** Slot the gearbox meshes: the gear's own slot driving forward, the reverse slot in reverse, none in neutral. */
+    public static int engagementSlot(int gear, Drive drive) {
+        return switch (drive) {
             case NEUTRAL -> -1;
+            case FORWARD -> gear;
             case REVERSE -> ENGAGEMENT_SLOTS - 1;
-            default -> gear.index() - 2;
         };
     }
 
     private void tickEngagement() {
-        int live = engagementSlot(gear());
+        int live = engagementSlot(gear(), drive());
         for (int slot = 0; slot < engagement.length; slot++) {
             float target = slot == live ? 1 : 0;
             if (!engagementStarted) {
@@ -125,7 +153,7 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     /** 0 while a corner cog is parked, 1 when it meshes its pinion; between while it slides. */
     public float engagement(int slot, float partialTicks) {
         if (!engagementStarted)
-            return engagementSlot(gear()) == slot ? 1 : 0;
+            return engagementSlot(gear(), drive()) == slot ? 1 : 0;
         return engagement[slot].getValue(partialTicks);
     }
 
@@ -156,23 +184,51 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
 
     private void signalChanged(Role role) {
         int effective = Math.max(wired[role.ordinal()], linked[role.ordinal()]);
-        apply(rules.onSignal(role, effective, gear(), level.getGameTime()), true);
+        apply(rules.onSignal(role, effective, state(), level.getGameTime()), true);
         setChanged();
         sendData();
     }
 
-    /** A computer (or anything else) asks for a specific gear. */
-    public ShiftRules.Result requestGear(Gear target) {
-        return apply(rules.request(target, gear(), level.getGameTime()), true);
+    /** A computer (or anything else) asks for a specific gear, 0-based. */
+    public ShiftRules.Result requestGear(int gear) {
+        return apply(rules.requestGear(gear, state(), level.getGameTime()), true);
     }
 
     public ShiftRules.Result requestShift(boolean up) {
         long now = level.getGameTime();
-        return apply(up ? rules.shiftUp(gear(), now) : rules.shiftDown(gear(), now), true);
+        return apply(up ? rules.shiftUp(state(), now) : rules.shiftDown(state(), now), true);
     }
 
-    public ShiftRules.Control control() {
-        return rules.control();
+    public ShiftRules.Result requestDrive(Drive drive) {
+        ShiftRules.Result result = apply(rules.requestDrive(drive, state(), level.getGameTime()), true);
+        setChanged();
+        return result;
+    }
+
+    /** Changes one gear's target speed (clamped). Re-propagates if it is the gear in use. */
+    public void setGearSpeed(int gear, int rpm) {
+        int active = speeds.get(gear());
+        speeds.set(gear, rpm);
+        afterSpeedEdit(active);
+    }
+
+    /** Changes every gear's target speed (clamped), as the screen sends them. */
+    public void setGearSpeeds(int[] rpms) {
+        int active = speeds.get(gear());
+        speeds.setAll(rpms);
+        afterSpeedEdit(active);
+    }
+
+    private void afterSpeedEdit(int previousActive) {
+        if (level == null || level.isClientSide)
+            return;
+        if (speeds.get(gear()) != previousActive && drive() != Drive.NEUTRAL
+                && getBlockState().getBlock() instanceof TransmissionBlock block) {
+            block.shift(level, worldPosition, getBlockState(), state());
+            rules.markShifted(level.getGameTime());
+        }
+        setChanged();
+        sendData();
     }
 
     public float inputSpeed() {
@@ -180,7 +236,7 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     }
 
     public float outputSpeed() {
-        return getSpeed() * gear().ratio();
+        return getSpeed() * ratio();
     }
 
     private ShiftRules.Result apply(ShiftRules.Result result, boolean feedback) {
@@ -202,6 +258,7 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.put("ShiftRules", rules.write());
+        tag.putIntArray("GearSpeeds", speeds.toArray());
         tag.putIntArray("Wired", wired.clone());
         tag.putIntArray("Linked", linked.clone());
     }
@@ -210,6 +267,7 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         rules.read(tag.getCompound("ShiftRules"));
+        speeds.read(tag.getIntArray("GearSpeeds"));
         copyInto(tag.getIntArray("Wired"), wired);
         copyInto(tag.getIntArray("Linked"), linked);
     }
@@ -222,17 +280,16 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        Gear gear = gear();
-        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.gear", gear.label(), rpm(gear.ratio()))
+        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.gear", gear() + 1, targetSpeed())
                 .style(ChatFormatting.GOLD).forGoggles(tooltip);
-        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.speed", rpm(inputSpeed()), rpm(outputSpeed()))
+        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.drive." + drive().id())
                 .style(ChatFormatting.GRAY).forGoggles(tooltip);
-        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.control." + control().id())
+        new LangBuilder(CreateVehicleSurplus.ID).translate("gui.goggles.transmission.speed", rpm(inputSpeed()), rpm(outputSpeed()))
                 .style(ChatFormatting.GRAY).forGoggles(tooltip);
         return true;
     }
 
     private static String rpm(float value) {
-        return String.format(Locale.ROOT, "%.2f", value).replaceAll("\\.?0+$", "");
+        return String.format(Locale.ROOT, "%.1f", value).replaceAll("\\.?0+$", "");
     }
 }

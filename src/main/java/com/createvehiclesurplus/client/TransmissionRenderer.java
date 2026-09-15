@@ -1,7 +1,6 @@
 package com.createvehiclesurplus.client;
 
 import com.createvehiclesurplus.content.link.SidedLinkBehaviour;
-import com.createvehiclesurplus.content.transmission.Gear;
 import com.createvehiclesurplus.content.transmission.Role;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
@@ -73,7 +72,7 @@ public class TransmissionRenderer extends KineticBlockEntityRenderer<SplitShaftB
         Direction positive = Direction.get(Direction.AxisDirection.POSITIVE, axis);
         Direction input = TransmissionParts.inputEnd(be);
         float in = be.getSpeed();
-        float out = in * be.gear().ratio();
+        float out = be.outputSpeed();
         float time = AnimationTickHolder.getRenderTime(be.getLevel());
         float base = getRotationOffsetForPosition(be, be.getBlockPos(), axis);
         VertexConsumer solid = buffer.getBuffer(RenderType.solid());
@@ -85,17 +84,14 @@ public class TransmissionRenderer extends KineticBlockEntityRenderer<SplitShaftB
         }
         float layAngle = radians(time * -in * 3f / 10 + base);
         draw(TransmissionParts.LAY_ROD, state, positive, TransmissionParts.onLayshaft(axis, 8), be, axis, layAngle, light, ms, solid);
-        int live = TransmissionParts.slotOf(be.gear());
+        int live = TransmissionParts.slotOf(be);
         for (int slot = 0; slot < TransmissionParts.SLOTS; slot++) {
-            Gear gear = TransmissionParts.gearOfSlot(slot);
-            PartialModel gearModel = gear == Gear.REVERSE ? TransmissionParts.LAY_REVERSE : TransmissionParts.LAY[TransmissionParts.sizeOf(gear)];
-            float slotA = TransmissionParts.SLOT_A[gear.index()];
-            draw(gearModel, state, positive, TransmissionParts.onLayshaft(axis, slotA), be, axis,
+            draw(TransmissionParts.clusterGear(slot), state, positive, TransmissionParts.onLayshaft(axis, TransmissionParts.slotA(slot)), be, axis,
                     radians(time * -in * 3f / 10 + base + TransmissionParts.MESH_OFFSET), light, ms, solid);
             float engagement = be.engagement(slot, partialTicks);
             float speed = slot == live ? out : 0;
-            draw(TransmissionParts.SLIDER[TransmissionParts.sizeOf(gear)], state, positive,
-                    TransmissionParts.onShaft(axis, TransmissionParts.sliderA(gear, engagement)), be, axis,
+            draw(TransmissionParts.SLIDER[TransmissionParts.sizeOf(slot)], state, positive,
+                    TransmissionParts.onShaft(axis, TransmissionParts.sliderA(slot, engagement)), be, axis,
                     radians(time * speed * 3f / 10 + base), light, ms, solid);
         }
     }

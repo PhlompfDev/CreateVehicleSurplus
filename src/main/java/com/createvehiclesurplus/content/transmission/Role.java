@@ -2,13 +2,13 @@ package com.createvehiclesurplus.content.transmission;
 
 /**
  * What a long face of the Transmission does. Declared in ring order around the shaft
- * (Up, Analog, Down, Neutral), so Up is opposite Down and Analog opposite Neutral.
+ * (Up, Forward, Down, Reverse), so Up is opposite Down and Forward opposite Reverse.
  */
 public enum Role {
     UP("up"),
-    ANALOG("analog"),
+    FORWARD("forward"),
     DOWN("down"),
-    NEUTRAL("neutral");
+    REVERSE("reverse");
 
     public static final Role[] VALUES = values();
 

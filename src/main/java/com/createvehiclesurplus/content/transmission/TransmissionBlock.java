@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.ticks.TickPriority;
 import org.jetbrains.annotations.Nullable;
@@ -26,13 +27,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * An inline gearbox for vehicle drivelines. Shafts on the two {@code AXIS} ends; the four long
  * faces each have a {@link Role}, taken from a ring of faces around the axis rotated by
- * {@link #ROLES}. The current gear is the {@link #GEAR} property so clients get it for free.
+ * {@link #ROLES}. The current gear and drive are the {@link #GEAR} and {@link #DRIVE} properties
+ * so clients get them for free.
  */
 public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<TransmissionBlockEntity> {
     /** Quarter-turns of the role layout around the shaft. */
     public static final IntegerProperty ROLES = IntegerProperty.create("roles", 0, 3);
-    /** {@link Gear#index()} of the current gear. */
-    public static final IntegerProperty GEAR = IntegerProperty.create("gear", 0, 5);
+    /** Index (0-based) of the current gear; its speed lives in the block entity's {@link GearSpeeds}. */
+    public static final IntegerProperty GEAR = IntegerProperty.create("gear", 0, GearSpeeds.GEARS - 1);
+    /** Which way the output turns, or neutral. */
+    public static final EnumProperty<Drive> DRIVE = EnumProperty.create("drive", Drive.class);
 
     // Consecutive faces around each axis; ROLES = 0 puts Up on the first one.
     private static final Direction[] RING_X = {Direction.UP, Direction.SOUTH, Direction.DOWN, Direction.NORTH};
@@ -41,12 +45,12 @@ public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<
 
     public TransmissionBlock(Properties properties) {
         super(properties);
-        registerDefaultState(defaultBlockState().setValue(ROLES, 0).setValue(GEAR, Gear.NEUTRAL.index()));
+        registerDefaultState(defaultBlockState().setValue(ROLES, 0).setValue(GEAR, 0).setValue(DRIVE, Drive.NEUTRAL));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ROLES, GEAR);
+        builder.add(ROLES, GEAR, DRIVE);
         super.createBlockStateDefinition(builder);
     }
 
@@ -85,8 +89,8 @@ public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<
         return top ? Direction.WEST : Direction.EAST;
     }
 
-    public static Gear gearOf(BlockState state) {
-        return Gear.byIndex(state.getValue(GEAR));
+    public static ShiftRules.State stateOf(BlockState state) {
+        return new ShiftRules.State(state.getValue(GEAR), state.getValue(DRIVE));
     }
 
     /** Axis as Create's encased shafts pick it; Up faces the sky on a horizontal shaft, the player on a vertical one. */
@@ -100,7 +104,7 @@ public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<
         for (int i = 0; i < ring.length; i++)
             if (ring[i] == upFace)
                 roles = i;
-        return state.setValue(ROLES, roles).setValue(GEAR, Gear.NEUTRAL.index());
+        return state.setValue(ROLES, roles).setValue(GEAR, 0).setValue(DRIVE, Drive.NEUTRAL);
     }
 
     /** Wrench on a shaft end turns the roles around the shaft; on a long face Create's axis rotation applies. */
@@ -122,11 +126,14 @@ public class TransmissionBlock extends AbstractEncasedShaftBlock implements IBE<
         withBlockEntityDo(level, pos, TransmissionBlockEntity::updateWiredSignals);
     }
 
-    /** Change gear the way Create's Gearshift flips POWERED: detach, change the state, re-attach next tick. */
-    public void shift(Level level, BlockPos pos, BlockState state, Gear gear) {
+    /**
+     * Change gear or drive the way Create's Gearshift flips POWERED: detach, change the state,
+     * re-attach next tick. Called with the current state it just re-propagates (a gear speed edit).
+     */
+    public void shift(Level level, BlockPos pos, BlockState state, ShiftRules.State target) {
         if (level.getBlockEntity(pos) instanceof KineticBlockEntity kinetic)
             RotationPropagator.handleRemoved(level, pos, kinetic);
-        level.setBlock(pos, state.setValue(GEAR, gear.index()), Block.UPDATE_CLIENTS);
+        level.setBlock(pos, state.setValue(GEAR, target.gear()).setValue(DRIVE, target.drive()), Block.UPDATE_CLIENTS);
         level.scheduleTick(pos, this, 1, TickPriority.EXTREMELY_HIGH);
     }
 

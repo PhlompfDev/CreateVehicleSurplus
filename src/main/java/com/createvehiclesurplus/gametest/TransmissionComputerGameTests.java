@@ -1,7 +1,7 @@
 package com.createvehiclesurplus.gametest;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
-import com.createvehiclesurplus.content.transmission.Gear;
+import com.createvehiclesurplus.content.transmission.Drive;
 import com.createvehiclesurplus.content.transmission.TransmissionComputerApi;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -21,58 +21,69 @@ public class TransmissionComputerGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void computer_sets_and_reads_the_gear(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(10, () -> {
-            Object[] result = api(helper).setGear("1/2");
-            check(Arrays.equals(result, new Object[]{true}), "setGear returned " + Arrays.toString(result));
-        });
-        helper.runAfterDelay(20, () -> {
             TransmissionComputerApi api = api(helper);
-            check(api.getGear().equals("1/2"), "getGear returned " + api.getGear());
-            check(api.getRatio() == 0.5, "getRatio returned " + api.getRatio());
+            check(Arrays.equals(api.setGear(2), new Object[]{true}), "setGear refused");
+            // Inside the cooldown: accepted now, lands on a later tick.
+            check(Arrays.equals(api.setDirection("forward"), new Object[]{true}), "setDirection refused");
+        });
+        helper.runAfterDelay(25, () -> {
+            TransmissionComputerApi api = api(helper);
+            check(api.getGear() == 2, "getGear returned " + api.getGear());
+            check(api.getDirection().equals("forward"), "getDirection returned " + api.getDirection());
             check(api.getInputSpeed() != 0, "input speed is 0");
-            check(api.getOutputSpeed() == api.getInputSpeed() * 0.5, "output " + api.getOutputSpeed() + " for input " + api.getInputSpeed());
-            check(api.getControl().equals("free"), "getControl returned " + api.getControl());
+            check(Math.abs(api.getOutputSpeed() - Math.signum(api.getInputSpeed()) * 64) < 0.01, "output " + api.getOutputSpeed());
             helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void computer_gets_refusal_reasons(GameTestHelper helper) {
-        placeRig(helper, Gear.REVERSE);
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(10, () -> {
             check(Arrays.equals(api(helper).shiftDown(), new Object[]{false, "limit"}), "expected limit");
-            helper.setBlock(ANALOG_FACE, Blocks.REDSTONE_BLOCK);
+            helper.setBlock(REVERSE_FACE, Blocks.REDSTONE_BLOCK);
         });
         helper.runAfterDelay(20, () -> {
             TransmissionComputerApi api = api(helper);
-            check(api.getControl().equals("analog"), "getControl returned " + api.getControl());
-            check(Arrays.equals(api.setGear("1/4"), new Object[]{false, "analog_override"}), "expected analog_override");
+            check(api.getDirection().equals("reverse"), "getDirection returned " + api.getDirection());
+            check(Arrays.equals(api.setDirection("forward"), new Object[]{false, "redstone_override"}), "expected redstone_override");
             helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
-    public static void unknown_gear_label_is_an_error(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+    public static void bad_arguments_are_errors(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(5, () -> {
-            try {
-                api(helper).setGear("2");
-            } catch (IllegalArgumentException expected) {
-                helper.succeed();
-                return;
-            }
-            check(false, "setGear(\"2\") should throw");
+            TransmissionComputerApi api = api(helper);
+            expectError(() -> api.setGear(5), "setGear(5)");
+            expectError(() -> api.setGear(0), "setGear(0)");
+            expectError(() -> api.setDirection("sideways"), "setDirection(sideways)");
+            expectError(() -> api.setGearSpeed(9, 100), "setGearSpeed(9, 100)");
+            helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
-    public static void computer_lists_the_gears(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+    public static void computer_sets_gear_speeds(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(5, () -> {
-            check(api(helper).getGears().equals(List.of("R", "N", "1/4", "1/2", "3/4", "1")), "getGears returned " + api(helper).getGears());
+            TransmissionComputerApi api = api(helper);
+            check(api.setGearSpeed(1, 300) == 256, "setGearSpeed should clamp to 256");
+            check(api.getGearSpeeds().equals(List.of(256, 64, 128, 256)), "getGearSpeeds returned " + api.getGearSpeeds());
             helper.succeed();
         });
+    }
+
+    private static void expectError(Runnable call, String what) {
+        try {
+            call.run();
+        } catch (IllegalArgumentException expected) {
+            return;
+        }
+        check(false, what + " should throw");
     }
 
     private static TransmissionComputerApi api(GameTestHelper helper) {

@@ -1,7 +1,7 @@
 package com.createvehiclesurplus.gametest;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
-import com.createvehiclesurplus.content.transmission.Gear;
+import com.createvehiclesurplus.content.transmission.Drive;
 import com.createvehiclesurplus.content.transmission.Role;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
@@ -34,42 +34,44 @@ import static com.createvehiclesurplus.gametest.TransmissionGameTests.*;
 public class TransmissionLinkGameTests {
     private static final BlockPos LINK = new BlockPos(0, 0, 3);
 
+    /** Held Up repeats every 8 ticks, so each check comes before the repeat and the link drops first. */
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void link_pulse_shifts_up(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+        placeRig(helper, 0, Drive.NEUTRAL);
         placeTransmitter(helper);
         helper.runAfterDelay(5, () -> tune(helper, Role.UP, Items.IRON_INGOT, Items.GOLD_INGOT));
         helper.runAfterDelay(6, () -> transmitter(helper).transmit(15));
-        helper.runAfterDelay(15, () -> {
-            checkGear(helper, Gear.QUARTER);
+        helper.runAfterDelay(12, () -> {
+            checkState(helper, 1, Drive.NEUTRAL);
             transmitter(helper).transmit(0);
         });
-        helper.runAfterDelay(25, () -> transmitter(helper).transmit(15));
-        helper.runAfterDelay(35, () -> {
-            checkGear(helper, Gear.HALF);
+        helper.runAfterDelay(22, () -> transmitter(helper).transmit(15));
+        helper.runAfterDelay(28, () -> {
+            checkState(helper, 2, Drive.NEUTRAL);
+            transmitter(helper).transmit(0);
             helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
-    public static void link_analog_follows_bands(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+    public static void link_forward_drives_while_held(GameTestHelper helper) {
+        placeRig(helper, 0, Drive.NEUTRAL);
         placeTransmitter(helper);
-        helper.runAfterDelay(5, () -> tune(helper, Role.ANALOG, Items.COPPER_INGOT, Items.LAPIS_LAZULI));
-        helper.runAfterDelay(6, () -> transmitter(helper).transmit(10));
+        helper.runAfterDelay(5, () -> tune(helper, Role.FORWARD, Items.COPPER_INGOT, Items.LAPIS_LAZULI));
+        helper.runAfterDelay(6, () -> transmitter(helper).transmit(15));
         helper.runAfterDelay(15, () -> {
-            checkGear(helper, Gear.HALF);
-            transmitter(helper).transmit(4);
+            checkState(helper, 0, Drive.FORWARD);
+            transmitter(helper).transmit(0);
         });
         helper.runAfterDelay(25, () -> {
-            checkGear(helper, Gear.NEUTRAL);
+            checkState(helper, 0, Drive.NEUTRAL);
             helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void frequencies_follow_their_role_when_rotated(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+        placeRig(helper, 0, Drive.NEUTRAL);
         placeTransmitter(helper);
         helper.runAfterDelay(5, () -> {
             tune(helper, Role.UP, Items.EMERALD, Items.DIAMOND);
@@ -82,22 +84,23 @@ public class TransmissionLinkGameTests {
             check(slot.z > 0.9, "Up's first slot should now be on the south face, got " + slot);
         });
         helper.runAfterDelay(8, () -> transmitter(helper).transmit(15));
-        helper.runAfterDelay(18, () -> {
-            checkGear(helper, Gear.QUARTER);
+        helper.runAfterDelay(13, () -> {
+            checkState(helper, 1, Drive.NEUTRAL);
+            transmitter(helper).transmit(0);
             helper.succeed();
         });
     }
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void frequencies_survive_save_and_load(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(5, () -> {
             TransmissionBlockEntity be = transmission(helper);
             be.link(Role.DOWN).setFrequency(true, new ItemStack(Items.COAL));
             be.link(Role.DOWN).setFrequency(false, new ItemStack(Items.QUARTZ));
             CompoundTag saved = be.saveWithoutMetadata(helper.getLevel().registryAccess());
             helper.setBlock(BOX, Blocks.AIR);
-            helper.setBlock(BOX, box(Gear.NEUTRAL));
+            helper.setBlock(BOX, box(0, Drive.NEUTRAL));
             TransmissionBlockEntity fresh = transmission(helper);
             fresh.loadWithComponents(saved, helper.getLevel().registryAccess());
             check(fresh.link(Role.DOWN).getFrequency(true).getStack().is(Items.COAL), "first frequency lost");
@@ -113,13 +116,13 @@ public class TransmissionLinkGameTests {
      */
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void first_slot_is_the_upper_one(GameTestHelper helper) {
-        placeRig(helper, Gear.NEUTRAL);
+        placeRig(helper, 0, Drive.NEUTRAL);
         helper.runAfterDelay(5, () -> {
             BlockPos abs = helper.absolutePos(BOX);
             BlockState state = helper.getLevel().getBlockState(abs);
             TransmissionBlockEntity be = transmission(helper);
-            Vec3 sideFirst = be.link(Role.ANALOG).getSlot(true).getLocalOffset(helper.getLevel(), abs, state);
-            Vec3 sideSecond = be.link(Role.ANALOG).getSlot(false).getLocalOffset(helper.getLevel(), abs, state);
+            Vec3 sideFirst = be.link(Role.FORWARD).getSlot(true).getLocalOffset(helper.getLevel(), abs, state);
+            Vec3 sideSecond = be.link(Role.FORWARD).getSlot(false).getLocalOffset(helper.getLevel(), abs, state);
             check(sideFirst.y > sideSecond.y, "side face: first slot " + sideFirst + " should be above " + sideSecond);
             Vec3 topFirst = be.link(Role.UP).getSlot(true).getLocalOffset(helper.getLevel(), abs, state);
             Vec3 topSecond = be.link(Role.UP).getSlot(false).getLocalOffset(helper.getLevel(), abs, state);

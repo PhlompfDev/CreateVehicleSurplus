@@ -1,11 +1,12 @@
 package com.createvehiclesurplus.gametest;
 
 import com.createvehiclesurplus.CreateVehicleSurplus;
-import com.createvehiclesurplus.content.transmission.Gear;
+import com.createvehiclesurplus.content.transmission.Drive;
 import com.createvehiclesurplus.content.transmission.Role;
 import com.createvehiclesurplus.content.transmission.ShiftRules;
 import com.createvehiclesurplus.content.transmission.ShiftRules.Refusal;
 import com.createvehiclesurplus.content.transmission.ShiftRules.Result;
+import com.createvehiclesurplus.content.transmission.ShiftRules.State;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -18,43 +19,71 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public class ShiftRulesGameTests {
     private static final String TEMPLATE = "empty_5x3x5";
 
+    private static State n(int gear) { return new State(gear, Drive.NEUTRAL); }
+    private static State f(int gear) { return new State(gear, Drive.FORWARD); }
+    private static State r(int gear) { return new State(gear, Drive.REVERSE); }
+
     @GameTest(template = TEMPLATE)
-    public static void analog_bands_map_to_gears(GameTestHelper helper) {
-        Gear[] expected = {
-                Gear.REVERSE, Gear.REVERSE,
-                Gear.NEUTRAL, Gear.NEUTRAL, Gear.NEUTRAL,
-                Gear.QUARTER, Gear.QUARTER, Gear.QUARTER,
-                Gear.HALF, Gear.HALF, Gear.HALF,
-                Gear.THREE_QUARTERS, Gear.THREE_QUARTERS,
-                Gear.DIRECT, Gear.DIRECT};
-        for (int strength = 1; strength <= 15; strength++)
-            check(Gear.forAnalog(strength) == expected[strength - 1], "strength " + strength + " gave " + Gear.forAnalog(strength));
+    public static void forward_hold_drives_and_release_goes_neutral(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        expectShift(rules.onSignal(Role.FORWARD, 15, n(0), 0), f(0));
+        rules.markShifted(0);
+        expectShift(rules.onSignal(Role.FORWARD, 0, f(0), 10), n(0));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void held_up_signal_shifts_once(GameTestHelper helper) {
+    public static void both_direction_faces_mean_neutral(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
-        expectShift(rules.onSignal(Role.UP, 15, Gear.NEUTRAL, 0), Gear.QUARTER);
+        expectShift(rules.onSignal(Role.FORWARD, 15, n(0), 0), f(0));
         rules.markShifted(0);
-        expectNothing(rules.onSignal(Role.UP, 15, Gear.QUARTER, 10));
-        expectNothing(rules.onSignal(Role.UP, 0, Gear.QUARTER, 11));
-        expectShift(rules.onSignal(Role.UP, 7, Gear.QUARTER, 20), Gear.HALF);
+        expectShift(rules.onSignal(Role.REVERSE, 15, f(0), 10), n(0));
+        check(rules.redstoneDrive() == Drive.NEUTRAL, "both faces should ask for neutral");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void drive_change_during_cooldown_lands_on_tick(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        rules.markShifted(0);
+        expectNothing(rules.onSignal(Role.REVERSE, 15, n(0), 1));
+        expectNothing(rules.tick(n(0), 3));
+        expectShift(rules.tick(n(0), 4), r(0));
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void up_pulse_shifts_then_repeats_while_held(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        expectShift(rules.onSignal(Role.UP, 15, n(0), 0), n(1));
+        rules.markShifted(0);
+        expectNothing(rules.tick(n(1), 7));
+        expectShift(rules.tick(n(1), 8), n(2));
+        rules.markShifted(8);
+        expectNothing(rules.onSignal(Role.UP, 0, n(2), 9));
+        expectNothing(rules.tick(n(2), 30));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
     public static void down_pulse_shifts_down(GameTestHelper helper) {
-        ShiftRules rules = new ShiftRules();
-        expectShift(rules.onSignal(Role.DOWN, 15, Gear.NEUTRAL, 0), Gear.REVERSE);
+        expectShift(new ShiftRules().onSignal(Role.DOWN, 15, f(2), 0), f(1));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void ends_do_not_wrap(GameTestHelper helper) {
+    public static void ends_refuse_with_limit(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
-        expectRefusal(rules.shiftUp(Gear.DIRECT, 0), Refusal.LIMIT);
-        expectRefusal(rules.shiftDown(Gear.REVERSE, 0), Refusal.LIMIT);
+        expectRefusal(rules.shiftUp(n(3), 0), Refusal.LIMIT);
+        expectRefusal(rules.shiftDown(n(0), 0), Refusal.LIMIT);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void held_up_at_top_gear_stays_quiet(GameTestHelper helper) {
+        ShiftRules rules = new ShiftRules();
+        expectRefusal(rules.onSignal(Role.UP, 15, n(3), 0), Refusal.LIMIT);
+        expectNothing(rules.tick(n(3), 8));
         helper.succeed();
     }
 
@@ -62,83 +91,62 @@ public class ShiftRulesGameTests {
     public static void cooldown_blocks_fast_shifts(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
         rules.markShifted(100);
-        expectRefusal(rules.shiftUp(Gear.NEUTRAL, 103), Refusal.COOLDOWN);
-        expectShift(rules.shiftUp(Gear.NEUTRAL, 104), Gear.QUARTER);
+        expectRefusal(rules.shiftUp(n(0), 103), Refusal.COOLDOWN);
+        expectShift(rules.shiftUp(n(0), 104), n(1));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void analog_overrides_pulses_and_requests(GameTestHelper helper) {
+    public static void computer_drive_holds_without_redstone(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
-        expectShift(rules.onSignal(Role.ANALOG, 10, Gear.NEUTRAL, 0), Gear.HALF);
+        expectShift(rules.requestDrive(Drive.FORWARD, n(0), 0), f(0));
         rules.markShifted(0);
-        expectRefusal(rules.onSignal(Role.UP, 15, Gear.HALF, 20), Refusal.ANALOG_OVERRIDE);
-        expectRefusal(rules.request(Gear.DIRECT, Gear.HALF, 20), Refusal.ANALOG_OVERRIDE);
-        check(rules.control() == ShiftRules.Control.ANALOG, "control should be analog");
+        check(rules.wantedDrive() == Drive.FORWARD, "computer drive should hold");
+        expectNothing(rules.tick(f(0), 20));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void analog_change_during_cooldown_lands_on_tick(GameTestHelper helper) {
+    public static void redstone_overrides_computer_drive(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
+        expectShift(rules.onSignal(Role.REVERSE, 15, n(0), 0), r(0));
         rules.markShifted(0);
-        expectNothing(rules.onSignal(Role.ANALOG, 15, Gear.NEUTRAL, 1));
-        expectNothing(rules.tick(Gear.NEUTRAL, 3));
-        expectShift(rules.tick(Gear.NEUTRAL, 4), Gear.DIRECT);
+        expectRefusal(rules.requestDrive(Drive.FORWARD, r(0), 10), Refusal.REDSTONE_OVERRIDE);
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void neutral_hold_locks_and_release_keeps_neutral(GameTestHelper helper) {
+    public static void releasing_redstone_hands_back_to_the_computer(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
-        expectShift(rules.onSignal(Role.NEUTRAL, 15, Gear.HALF, 0), Gear.NEUTRAL);
+        expectShift(rules.requestDrive(Drive.FORWARD, n(0), 0), f(0));
         rules.markShifted(0);
-        expectRefusal(rules.request(Gear.DIRECT, Gear.NEUTRAL, 10), Refusal.NEUTRAL_HOLD);
-        expectRefusal(rules.onSignal(Role.UP, 15, Gear.NEUTRAL, 10), Refusal.NEUTRAL_HOLD);
-        // Analog is set while neutral is held: neutral still wins.
-        expectNothing(rules.onSignal(Role.ANALOG, 15, Gear.NEUTRAL, 11));
-        // Releasing neutral hands control to analog.
-        expectShift(rules.onSignal(Role.NEUTRAL, 0, Gear.NEUTRAL, 20), Gear.DIRECT);
-        helper.succeed();
-    }
-
-    @GameTest(template = TEMPLATE)
-    public static void neutral_release_without_analog_stays_neutral(GameTestHelper helper) {
-        ShiftRules rules = new ShiftRules();
-        expectShift(rules.onSignal(Role.NEUTRAL, 15, Gear.HALF, 0), Gear.NEUTRAL);
-        rules.markShifted(0);
-        expectNothing(rules.onSignal(Role.NEUTRAL, 0, Gear.NEUTRAL, 20));
-        check(rules.control() == ShiftRules.Control.FREE, "control should be free");
+        expectShift(rules.onSignal(Role.REVERSE, 15, f(0), 10), r(0));
+        rules.markShifted(10);
+        expectShift(rules.onSignal(Role.REVERSE, 0, r(0), 20), f(0));
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
     public static void request_for_current_gear_is_accepted_unchanged(GameTestHelper helper) {
-        Result result = new ShiftRules().request(Gear.HALF, Gear.HALF, 0);
+        Result result = new ShiftRules().requestGear(1, n(1), 0);
         check(result.accepted() && result.target() == null && result.refusal() == null, "expected UNCHANGED, got " + result);
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void saved_strengths_prevent_false_pulses(GameTestHelper helper) {
+    public static void saved_state_survives_reload(GameTestHelper helper) {
         ShiftRules rules = new ShiftRules();
-        rules.onSignal(Role.UP, 15, Gear.NEUTRAL, 0);
+        rules.onSignal(Role.UP, 15, n(0), 0);
+        rules.requestDrive(Drive.REVERSE, n(1), 0);
         ShiftRules loaded = new ShiftRules();
         loaded.read(rules.write());
-        expectNothing(loaded.onSignal(Role.UP, 15, Gear.QUARTER, 50));
+        expectNothing(loaded.onSignal(Role.UP, 15, n(1), 50));
+        check(loaded.computerDrive() == Drive.REVERSE, "computer drive lost: " + loaded.computerDrive());
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
-    public static void labels_round_trip(GameTestHelper helper) {
-        for (Gear gear : Gear.values())
-            check(Gear.byLabel(gear.label()) == gear && Gear.byIndex(gear.index()) == gear, "round trip failed for " + gear);
-        check(Gear.byLabel("2") == null, "unknown label should be null");
-        helper.succeed();
-    }
-
-    private static void expectShift(Result result, Gear gear) {
-        check(result.accepted() && result.target() == gear, "expected shift to " + gear + ", got " + result);
+    private static void expectShift(Result result, State state) {
+        check(result.accepted() && state.equals(result.target()), "expected shift to " + state + ", got " + result);
     }
 
     private static void expectNothing(Result result) {

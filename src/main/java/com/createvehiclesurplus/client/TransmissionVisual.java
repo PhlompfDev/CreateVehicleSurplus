@@ -1,6 +1,5 @@
 package com.createvehiclesurplus.client;
 
-import com.createvehiclesurplus.content.transmission.Gear;
 import com.createvehiclesurplus.content.transmission.TransmissionBlock;
 import com.createvehiclesurplus.content.transmission.TransmissionBlockEntity;
 import com.simibubi.create.AllPartialModels;
@@ -50,10 +49,8 @@ public class TransmissionVisual extends KineticBlockEntityVisual<TransmissionBlo
         rod = instance(TransmissionParts.LAY_ROD).rotateToFace(Direction.SOUTH, positive);
         all.add(rod);
         for (int slot = 0; slot < TransmissionParts.SLOTS; slot++) {
-            Gear gear = TransmissionParts.gearOfSlot(slot);
-            PartialModel gearModel = gear == Gear.REVERSE ? TransmissionParts.LAY_REVERSE : TransmissionParts.LAY[TransmissionParts.sizeOf(gear)];
-            cluster[slot] = instance(gearModel).rotateToFace(Direction.SOUTH, positive);
-            sliders[slot] = instance(TransmissionParts.SLIDER[TransmissionParts.sizeOf(gear)]).rotateToFace(Direction.SOUTH, positive);
+            cluster[slot] = instance(TransmissionParts.clusterGear(slot)).rotateToFace(Direction.SOUTH, positive);
+            sliders[slot] = instance(TransmissionParts.SLIDER[TransmissionParts.sizeOf(slot)]).rotateToFace(Direction.SOUTH, positive);
             all.add(cluster[slot]);
             all.add(sliders[slot]);
         }
@@ -81,7 +78,7 @@ public class TransmissionVisual extends KineticBlockEntityVisual<TransmissionBlo
         Axis axis = state.getValue(TransmissionBlock.AXIS);
         Direction input = TransmissionParts.inputEnd(blockEntity);
         float in = blockEntity.getSpeed();
-        float out = in * blockEntity.gear().ratio();
+        float out = blockEntity.outputSpeed();
         Vector3f origin = new Vector3f(getVisualPosition().getX(), getVisualPosition().getY(), getVisualPosition().getZ());
 
         for (int i : Iterate.zeroAndOne) {
@@ -90,15 +87,13 @@ public class TransmissionVisual extends KineticBlockEntityVisual<TransmissionBlo
         }
         // The cluster turns against the input, like a layshaft driven off the input pinion.
         place(rod.setup(blockEntity, axis, -in), origin, TransmissionParts.onLayshaft(axis, 8));
-        int live = TransmissionParts.slotOf(blockEntity.gear());
+        int live = TransmissionParts.slotOf(blockEntity);
         for (int slot = 0; slot < TransmissionParts.SLOTS; slot++) {
-            Gear gear = TransmissionParts.gearOfSlot(slot);
-            float slotA = TransmissionParts.SLOT_A[gear.index()];
             place(cluster[slot].setup(blockEntity, axis, -in).setRotationOffset(cluster[slot].rotationOffset + TransmissionParts.MESH_OFFSET),
-                    origin, TransmissionParts.onLayshaft(axis, slotA));
+                    origin, TransmissionParts.onLayshaft(axis, TransmissionParts.slotA(slot)));
             float engagement = blockEntity.engagement(slot, partialTick);
             float speed = slot == live ? out : 0;
-            place(sliders[slot].setup(blockEntity, axis, speed), origin, TransmissionParts.onShaft(axis, TransmissionParts.sliderA(gear, engagement)));
+            place(sliders[slot].setup(blockEntity, axis, speed), origin, TransmissionParts.onShaft(axis, TransmissionParts.sliderA(slot, engagement)));
         }
     }
 
