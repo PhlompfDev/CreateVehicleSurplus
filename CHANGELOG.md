@@ -8,6 +8,13 @@
 - Goggles on the Gimbal Controller show whether it is balancing and the current lean.
 - Ponder scene for the Gimbal Controller.
 
+**Changed**
+- Transmission reworked into a gearshift: each of its four gears is a set output speed (32, 64, 128 and 256 RPM by default), whatever the input.
+- Transmission faces: hold Forward or Reverse to drive; Up and Down shift a gear and keep shifting while held. Analog and Neutral faces are gone.
+- Shift-right-click a Transmission to set its four gear speeds.
+- The Transmission now has a small stress impact that follows its output speed.
+- CC: Tweaked: `transmission` peripheral methods changed (gears are numbers 1–4; new `getDirection`, `setDirection`, `getGearSpeeds`, `setGearSpeed`).
+
 ## 0.7.0 — Transmission remodel
 
 **Changed**

@@ -12,10 +12,9 @@ Create Aeronautics / Simulated builds, and they work anywhere else too.
   stops the feed.
 - **Long Fuel Tank**: the same tank lying down, a 1x1 tube up to 8 blocks long.
 - **Differential**: a Gearbox whose outputs all turn the input's way, for driven axles.
-- **Transmission**: an inline gearbox with Reverse, Neutral and gears 1/4, 1/2, 3/4 and 1:1.
-  Each long face has built-in Redstone Link slots: Up and Down shift a gear, Analog picks the
-  gear by signal strength, Neutral locks the output. The gear cluster in the channel along its
-  edge shows the gear: the sliding gear meshes the selected one, and hides away in Neutral.
+- **Transmission**: an inline gearshift. Its four gears are set output speeds (32, 64, 128 and
+  256 RPM by default, shift-right-click to change them), whatever the input. Each long face has
+  built-in Redstone Link slots: hold Forward or Reverse to drive, pulse Up or Down to shift.
 - **Gimbal Controller**: keeps an Aeronautics vehicle from falling over sideways and still lets it
   lean into turns, so two-wheelers work. Place it inline on the driveshaft with its shaft along the
   vehicle's forward axis. Heavier vehicles need more than one. Redstone switches it off.
@@ -27,8 +26,8 @@ Every block has a Ponder scene.
 - **Create Propulsion: Simulated** (optional): Fuel Tanks also feed its liquid thrusters.
 - **Create Aeronautics / Simulated** (optional): the Gimbal Controller balances its vehicles.
 - **CC: Tweaked** (optional): the Transmission is a `transmission` peripheral with `getGear`,
-  `setGear`, `shiftUp`, `shiftDown`, `getRatio`, `getInputSpeed`, `getOutputSpeed` and
-  `getControl`.
+  `setGear`, `shiftUp`, `shiftDown`, `getDirection`, `setDirection`, `getGearSpeeds`,
+  `setGearSpeed`, `getInputSpeed` and `getOutputSpeed`.
 
 ## Recipes
 
