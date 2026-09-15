@@ -70,5 +70,10 @@
   "createvehiclesurplus.gui.goggles.gimbal.balancing": "Balancing, leaning %1$s\u00b0",
   "createvehiclesurplus.gui.goggles.gimbal.idle": "Idle: shaft not turning",
   "createvehiclesurplus.gui.goggles.gimbal.off": "Off: redstone",
-  "createvehiclesurplus.gui.goggles.gimbal.no_ship": "Not on an Aeronautics vehicle"
+  "createvehiclesurplus.gui.goggles.gimbal.no_ship": "Not on an Aeronautics vehicle",
+  "createvehiclesurplus.ponder.gimbal_controller.header": "Balancing vehicles with the Gimbal Controller",
+  "createvehiclesurplus.ponder.gimbal_controller.text_1": "Two-wheeled Aeronautics vehicles fall over as soon as they turn",
+  "createvehiclesurplus.ponder.gimbal_controller.text_2": "A turning Gimbal Controller, placed along the vehicle's forward axis, keeps it upright",
+  "createvehiclesurplus.ponder.gimbal_controller.text_3": "It still leans into turns, like a real bike",
+  "createvehiclesurplus.ponder.gimbal_controller.text_4": "Heavier vehicles need more than one. Redstone switches it off"
 }
