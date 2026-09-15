@@ -239,13 +239,16 @@ public class TransmissionGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 100)
     public static void legacy_save_loads_neutral_in_first_gear(GameTestHelper helper) {
-        placeRig(helper, 0, Drive.NEUTRAL);
-        helper.runAfterDelay(5, () -> {
+        placeRig(helper, 2, Drive.FORWARD);
+        helper.runAfterDelay(10, () -> {
+            check(speedAt(helper, OUTPUT) != 0, "output is not spinning up before the legacy reload");
             TransmissionBlockEntity be = transmission(helper);
             CompoundTag tag = be.saveWithoutMetadata(helper.getLevel().registryAccess());
             tag.remove("GearSpeeds");
             tag.putIntArray("Linked", new int[]{0, 0, 0, 15});
             tag.getCompound("ShiftRules").putIntArray("Strengths", new int[]{0, 0, 0, 15});
+            // Keep the forward redstone out of the way, or the wire legitimately re-drives the reloaded state.
+            helper.setBlock(FORWARD_FACE, Blocks.AIR);
             helper.setBlock(BOX, Blocks.AIR);
             helper.setBlock(BOX, box(2, Drive.NEUTRAL));
             TransmissionBlockEntity fresh = transmission(helper);
@@ -256,8 +259,9 @@ public class TransmissionGameTests {
             // way a genuine world load would.
             fresh.initialize();
         });
-        helper.runAfterDelay(20, () -> {
+        helper.runAfterDelay(30, () -> {
             checkState(helper, 0, Drive.NEUTRAL);
+            checkSpeed(helper, OUTPUT, 0);
             helper.succeed();
         });
     }

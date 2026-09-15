@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -116,10 +115,11 @@ public class TransmissionBlockEntity extends SplitShaftBlockEntity {
     @Override
     public void initialize() {
         super.initialize();
-        // Runs before propagation, so there's nothing to detach yet - just reset the state directly.
-        if (legacySave && level != null && !level.isClientSide && (gear() != 0 || drive() != Drive.NEUTRAL))
-            level.setBlock(worldPosition, getBlockState().setValue(TransmissionBlock.GEAR, 0).setValue(TransmissionBlock.DRIVE, Drive.NEUTRAL),
-                    Block.UPDATE_CLIENTS);
+        // The legacy state is dropped; shift (not a bare setBlock) re-propagates the output so downstream
+        // shafts don't keep whatever speed they were cached at before the update, even if it already reads
+        // gear 0/neutral.
+        if (legacySave && level != null && !level.isClientSide && getBlockState().getBlock() instanceof TransmissionBlock block)
+            block.shift(level, worldPosition, getBlockState(), new ShiftRules.State(0, Drive.NEUTRAL));
         legacySave = false;
         updateWiredSignals();
     }
