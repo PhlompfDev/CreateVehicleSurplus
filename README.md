@@ -29,16 +29,6 @@ Every block has a Ponder scene.
   `setGear`, `shiftUp`, `shiftDown`, `getDirection`, `setDirection`, `getGearSpeeds`,
   `setGearSpeed`, `getInputSpeed` and `getOutputSpeed`.
 
-## Recipes
-
-| Block | Recipe |
-|---|---|
-| Fuel Tank | Brass Sheet, Wooden Barrel, Brass Sheet in a column |
-| Long Fuel Tank | A Fuel Tank alone in the grid (and back) |
-| Differential | Cogwheel top and bottom, Shaft left and right, Brass Casing in the middle |
-| Transmission | Shapeless: Brass Casing, Gearshift, Redstone Link, Large Cogwheel |
-| Gimbal Controller | Precision Mechanism between two Shafts, Industrial Iron Blocks above and below |
-
 ## Requirements
 
 | Mod | Version |
