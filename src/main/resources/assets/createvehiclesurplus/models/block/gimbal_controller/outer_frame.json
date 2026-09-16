@@ -1,350 +1,80 @@
 {
-  "textures": {
-    "frame": "createvehiclesurplus:block/gimbal_controller/frame",
-    "particle": "createvehiclesurplus:block/gimbal_controller/frame"
-  },
-  "elements": [
-    {
-      "from": [
-        3,
-        7.375,
-        2.0
-      ],
-      "to": [
-        13,
-        8.625,
-        3.25
-      ],
-      "name": "outer_north",
-      "faces": {
-        "up": {
-          "uv": [
-            0,
-            0,
-            10,
-            1.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            9.5,
-            3.75,
-            11.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "north": {
-          "uv": [
-            0,
-            1.25,
-            10,
-            2.5
-          ],
-          "texture": "#frame"
-        },
-        "south": {
-          "uv": [
-            0,
-            1.25,
-            10,
-            2.5
-          ],
-          "texture": "#frame"
-        },
-        "east": {
-          "uv": [
-            7.5,
-            3.75,
-            9.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "west": {
-          "uv": [
-            7.5,
-            3.75,
-            9.5,
-            5.75
-          ],
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        3,
-        7.375,
-        12.75
-      ],
-      "to": [
-        13,
-        8.625,
-        14.0
-      ],
-      "name": "outer_south",
-      "faces": {
-        "up": {
-          "uv": [
-            0,
-            0,
-            10,
-            1.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            9.5,
-            3.75,
-            11.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "south": {
-          "uv": [
-            0,
-            1.25,
-            10,
-            2.5
-          ],
-          "texture": "#frame"
-        },
-        "north": {
-          "uv": [
-            0,
-            1.25,
-            10,
-            2.5
-          ],
-          "texture": "#frame"
-        },
-        "east": {
-          "uv": [
-            7.5,
-            3.75,
-            9.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "west": {
-          "uv": [
-            7.5,
-            3.75,
-            9.5,
-            5.75
-          ],
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        3,
-        7.375,
-        3.25
-      ],
-      "to": [
-        4.0,
-        8.625,
-        12.75
-      ],
-      "name": "outer_west",
-      "faces": {
-        "up": {
-          "uv": [
-            0,
-            3.75,
-            1.0,
-            13.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            9.5,
-            3.75,
-            11.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "east": {
-          "uv": [
-            0,
-            2.5,
-            9.5,
-            3.75
-          ],
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        12.0,
-        7.375,
-        3.25
-      ],
-      "to": [
-        13,
-        8.625,
-        12.75
-      ],
-      "name": "outer_east",
-      "faces": {
-        "up": {
-          "uv": [
-            0,
-            3.75,
-            1.0,
-            13.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            9.5,
-            3.75,
-            11.5,
-            5.75
-          ],
-          "texture": "#frame"
-        },
-        "west": {
-          "uv": [
-            0,
-            2.5,
-            9.5,
-            3.75
-          ],
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        2.75,
-        5.75,
-        5.75
-      ],
-      "to": [
-        4.75,
-        10.25,
-        10.25
-      ],
-      "name": "collar_east",
-      "faces": {
-        "east": {
-          "uv": [
-            1.0,
-            3.75,
-            5.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "up": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "north": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "south": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        }
-      }
-    },
-    {
-      "from": [
-        11.25,
-        5.75,
-        5.75
-      ],
-      "to": [
-        13.25,
-        10.25,
-        10.25
-      ],
-      "name": "collar_west",
-      "faces": {
-        "west": {
-          "uv": [
-            1.0,
-            3.75,
-            5.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "up": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "down": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "north": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        },
-        "south": {
-          "uv": [
-            5.5,
-            3.75,
-            7.5,
-            8.25
-          ],
-          "texture": "#frame"
-        }
-      }
-    }
-  ]
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "createvehiclesurplus:block/gimbal_controller/frame",
+		"frame": "createvehiclesurplus:block/gimbal_controller/frame"
+	},
+	"elements": [
+		{
+			"name": "outer_north",
+			"from": [3, 7.375, 2],
+			"to": [13, 8.625, 3.25],
+			"faces": {
+				"north": {"uv": [0, 1.25, 10, 2.5], "texture": "#frame"},
+				"east": {"uv": [7.5, 3.75, 9.5, 5.75], "texture": "#frame"},
+				"south": {"uv": [0, 1.25, 10, 2.5], "texture": "#frame"},
+				"west": {"uv": [7.5, 3.75, 9.5, 5.75], "texture": "#frame"},
+				"up": {"uv": [0, 0, 10, 1.25], "texture": "#frame"},
+				"down": {"uv": [9.5, 3.75, 11.5, 5.75], "texture": "#frame"}
+			}
+		},
+		{
+			"name": "outer_south",
+			"from": [3, 7.375, 12.75],
+			"to": [13, 8.625, 14],
+			"faces": {
+				"north": {"uv": [0, 1.25, 10, 2.5], "texture": "#frame"},
+				"east": {"uv": [7.5, 3.75, 9.5, 5.75], "texture": "#frame"},
+				"south": {"uv": [0, 1.25, 10, 2.5], "texture": "#frame"},
+				"west": {"uv": [7.5, 3.75, 9.5, 5.75], "texture": "#frame"},
+				"up": {"uv": [0, 0, 10, 1.25], "texture": "#frame"},
+				"down": {"uv": [9.5, 3.75, 11.5, 5.75], "texture": "#frame"}
+			}
+		},
+		{
+			"name": "outer_west",
+			"from": [3, 7.375, 3.25],
+			"to": [4, 8.625, 12.75],
+			"faces": {
+				"east": {"uv": [0, 2.5, 9.5, 3.75], "texture": "#frame"},
+				"up": {"uv": [0, 3.75, 1, 13.25], "texture": "#frame"},
+				"down": {"uv": [9.5, 3.75, 11.5, 5.75], "texture": "#frame"}
+			}
+		},
+		{
+			"name": "outer_east",
+			"from": [12, 7.375, 3.25],
+			"to": [13, 8.625, 12.75],
+			"faces": {
+				"west": {"uv": [0, 2.5, 9.5, 3.75], "texture": "#frame"},
+				"up": {"uv": [0, 3.75, 1, 13.25], "texture": "#frame"},
+				"down": {"uv": [9.5, 3.75, 11.5, 5.75], "texture": "#frame"}
+			}
+		},
+		{
+			"name": "collar_east",
+			"from": [2.75, 5.75, 5.75],
+			"to": [4.75, 10.25, 10.25],
+			"faces": {
+				"north": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"east": {"uv": [1, 3.75, 5.5, 8.25], "texture": "#frame"},
+				"south": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"up": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"down": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"}
+			}
+		},
+		{
+			"name": "collar_west",
+			"from": [11.25, 5.75, 5.75],
+			"to": [13.25, 10.25, 10.25],
+			"faces": {
+				"north": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"south": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"west": {"uv": [1, 3.75, 5.5, 8.25], "texture": "#frame"},
+				"up": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"},
+				"down": {"uv": [5.5, 3.75, 7.5, 8.25], "texture": "#frame"}
+			}
+		}
+	]
 }
